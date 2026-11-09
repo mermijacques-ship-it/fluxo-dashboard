@@ -700,7 +700,7 @@
         <span class="px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">TÉLÉMÉTRIE OS STEALTH : 0.2s (IDLE)</span>
       </div>
       <div>
-        SYNC MIROIR : <strong>2026-11-09 18:37:09</strong>
+        SYNC MIROIR : <strong>2026-11-09 18:40:30</strong>
       </div>
     </div>
 
@@ -1929,7 +1929,8 @@
 
       tbody.innerHTML = list.map(pb => {
         const isLolly = String(pb.bk || '').toLowerCase().includes('lolly') || String(pb.bk || '').toLowerCase().includes('loli');
-        const pfBadge = pb.pf === 'croissant_world'
+        const isWorld = pb.pf === 'croissant_world' || isLolly;
+        const pfBadge = isWorld
           ? (isLolly
               ? '<span class="px-2 py-0.5 rounded bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 font-bold text-xs">croissant_world · Lollybet</span>'
               : '<span class="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold text-xs">croissant_world · MyStake</span>')
@@ -2119,8 +2120,11 @@
           badge = '<span class="px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/20 font-bold">VOID</span>';
         }
 
-        const pfBadge = b.pf === 'croissant_world'
-          ? '<span class="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">croissant_world</span>'
+        const isLolly = String(b.bk || '').toLowerCase().includes('lolly') || String(b.bk || '').toLowerCase().includes('loli');
+        const pfBadge = (b.pf === 'croissant_world' || isLolly)
+          ? (isLolly
+              ? '<span class="px-1.5 py-0.5 rounded bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 font-semibold">croissant_world</span>'
+              : '<span class="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">croissant_world</span>')
           : '<span class="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">croissant_france</span>';
 
         const ticketBadge = b.ticket
@@ -2220,10 +2224,15 @@
     function triggerSmoothDashboardRefresh(forceManual) {
       const searchInput = document.getElementById('bet-search-input');
       if (searchInput && document.activeElement === searchInput && searchInput.value.trim().length > 0) return;
+      if (window.location.protocol === 'https:' || (window.location.protocol === 'http:' && !window.location.hostname.includes('127.0.0.1') && !window.location.hostname.includes('localhost'))) {
+        window.location.reload();
+        return;
+      }
       if (/Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent || '') && window.location.protocol === 'file:') { window.location.reload(); return; }
       const _c = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const _t = _c ? setTimeout(() => _c.abort(), 650) : null;
-      fetch('http://127.0.0.1:46210/refresh_dashboard', _c ? { signal: _c.signal } : {}).catch(() => {}).finally(() => { if (_t) clearTimeout(_t);
+      fetch('http://127.0.0.1:46210/refresh_dashboard', _c ? { signal: _c.signal } : {}).catch(() => {}).finally(() => {
+        if (_t) clearTimeout(_t);
         window.location.reload();
       });
     }
