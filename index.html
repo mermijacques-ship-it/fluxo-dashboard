@@ -700,7 +700,7 @@
         <span class="px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">TÉLÉMÉTRIE OS STEALTH : 0.1s (IDLE)</span>
       </div>
       <div>
-        SYNC MIROIR : <strong>2026-11-15 23:48:41</strong>
+        SYNC MIROIR : <strong>2026-11-15 23:53:31</strong>
       </div>
     </div>
 
@@ -2230,7 +2230,7 @@
       }
       if (/Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent || '') && window.location.protocol === 'file:') { window.location.reload(); return; }
       const _c = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const _t = _c ? setTimeout(() => _c.abort(), 650) : null;
+      const _t = _c ? setTimeout(() => _c.abort(), 4000) : null;
       fetch('http://127.0.0.1:46210/refresh_dashboard', _c ? { signal: _c.signal } : {}).catch(() => {}).finally(() => {
         if (_t) clearTimeout(_t);
         window.location.reload();
