@@ -286,13 +286,15 @@
       outline-offset: 2px;
     }
     input, select {
-      font-family: inherit;
+      font-family: inherit !important;
+      font-weight: 500;
       background-color: var(--muted);
       color: var(--foreground);
       border: 1px solid var(--border-strong);
       border-radius: 0.45rem;
-      padding: 0.42rem 0.68rem;
-      font-size: 0.78rem;
+      padding: 0.34rem 0.62rem;
+      font-size: 0.75rem !important;
+      line-height: 1.2;
       min-height: 34px;
       outline: none;
       caret-color: var(--ring);
@@ -618,21 +620,20 @@
               Terminal de Suivi du Capital &amp; Positions
             </h1>
           </div>
-          <p class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>PÉRIODE : 2026-10-06 → 2026-10-12</span>
+          <div class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>2026-10-06 → 2026-10-12</span>
             <span aria-hidden="true">·</span>
             <span>45 réglés, 0 en cours</span>
-            <span aria-hidden="true">·</span>
             <span id="runtime-mode-pill" class="px-1.5 py-0.5 rounded bg-[var(--muted)] border border-[var(--border)] text-slate-300">Mode local · Manuel</span>
-          </p>
+          </div>
         </div>
 
         <!-- Global Scope Selector (Portefeuille + Sport + Réinitialisation + Actualisation) -->
-        <div class="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
+        <div class="flex flex-wrap items-center gap-1.5 shrink-0 min-w-0 max-w-full">
           <div class="ctrl-group" role="group" aria-label="Sélecteur de portefeuille">
             <button onclick="setPortfolio('ALL')" id="pf-ALL" class="ctrl-btn active" aria-pressed="true">Global</button>
-            <button onclick="setPortfolio('croissant_world')" id="pf-croissant_world" class="ctrl-btn" aria-pressed="false">World · MyStake/Lolly</button>
-            <button onclick="setPortfolio('croissant_france')" id="pf-croissant_france" class="ctrl-btn" aria-pressed="false">France · PMU</button>
+            <button onclick="setPortfolio('croissant_world')" id="pf-croissant_world" class="ctrl-btn" aria-pressed="false">World</button>
+            <button onclick="setPortfolio('croissant_france')" id="pf-croissant_france" class="ctrl-btn" aria-pressed="false">France</button>
           </div>
 
           <select id="sport-filter-select" onchange="setSportFilter(this.value)" aria-label="Filtrer tout le terminal par sport">
@@ -1119,10 +1120,10 @@
         <span aria-hidden="true">·</span>
         <span>ALIMENTATION : <strong class="text-slate-300">100% (En charge)</strong></span>
         <span aria-hidden="true">·</span>
-        <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">TÉLÉMÉTRIE OS STEALTH : 0.4s (IDLE)</span>
+        <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">TÉLÉMÉTRIE OS STEALTH : 0.6s (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-18 22:42:07</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-18 22:51:36</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
@@ -1140,8 +1141,8 @@
     const worldSub = 16.67;
     const franceSub = 8.33;
     const subDateStr = "2026-10-08 12:00";
-    const snapshotGeneratedIso = "2026-11-18T22:42:12";
-    const lyceeSyncIso = "2026-11-18T22:42:07";
+    const snapshotGeneratedIso = "2026-11-18T22:51:48";
+    const lyceeSyncIso = "2026-11-18T22:51:36";
     const lyceeBotPid = "2468";
     const lyceePageState = "IDLE";
 
@@ -2009,16 +2010,19 @@
 
         let svgHtml = '';
         let tickIndex = 0;
+        let lastLabelY = Infinity;
         for (let gv = yMin; gv <= yMax + 1e-6; gv += step) {
           const roundedGv = Math.round(gv * 100) / 100;
           const y = getY(roundedGv);
           const isZero = Math.abs(roundedGv) < 1e-3;
-          const showLbl = isZero || tickIndex === 0 || (tickIndex % labelStride === 0) || (gv + step > yMax + 1e-6);
+          const wantsLbl = isZero || tickIndex === 0 || (tickIndex % labelStride === 0) || (gv + step > yMax + 1e-6);
+          const showLbl = wantsLbl && Math.abs(y - lastLabelY) >= 18;
           if (showLbl || totalTicks <= 45) {
             svgHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#94a3b8" stroke-opacity="${isZero ? 0.32 : 0.11}" stroke-width="${isZero ? 1.5 : 1}" stroke-dasharray="${isZero ? '4 4' : 'none'}" />`;
           }
           if (showLbl) {
             svgHtml += `<text x="${padL - 8}" y="${y + 4}" fill="#94a3b8" font-size="${axisFontSize}" text-anchor="end" font-family="Fira Code, ui-monospace, monospace">${fmtAxisEurJS(roundedGv, true)}</text>`;
+            lastLabelY = y;
           }
           tickIndex++;
         }
@@ -2266,17 +2270,20 @@
       const maxLabels = Math.max(4, Math.floor(plotH / 24));
       const labelStride = Math.max(1, Math.ceil(totalTicks / maxLabels));
       let tickIndex = 0;
+      let lastLabelY = Infinity;
 
       for (let gv = dynMin; gv <= dynMax + 1e-6; gv += step) {
         const roundedGv = Math.round(gv * 100) / 100;
         const y = getY(roundedGv);
         const isBase = Math.abs(roundedGv - windowStartCap) < 1e-3;
-        const showLbl = isBase || tickIndex === 0 || (tickIndex % labelStride === 0) || (gv + step > dynMax + 1e-6);
+        const wantsLbl = isBase || tickIndex === 0 || (tickIndex % labelStride === 0) || (gv + step > dynMax + 1e-6);
+        const showLbl = wantsLbl && Math.abs(y - lastLabelY) >= 18;
         if (showLbl || totalTicks <= 45) {
           svgHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#94a3b8" stroke-opacity="${isBase ? 0.34 : 0.11}" stroke-width="${isBase ? 1.4 : 1}" stroke-dasharray="${isBase ? '4 4' : 'none'}" />`;
         }
         if (showLbl) {
           svgHtml += `<text x="${padL - 8}" y="${y + 4}" fill="#94a3b8" font-size="${axisFontSize}" text-anchor="end" font-family="Fira Code, ui-monospace, monospace">${fmtAxisEurJS(roundedGv, false)}</text>`;
+          lastLabelY = y;
         }
         tickIndex++;
       }
