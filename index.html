@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FLUXO QUANT — Terminal de Suivi du Capital &amp; Positions</title>
 
-  <!-- Google Fonts (Fira Sans + Fira Code pour terminaux analytiques, repli systeme 100% hors-ligne) -->
+  <!-- Google Fonts (Inter + Fira Code pour terminaux analytiques, repli systeme 100% hors-ligne) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- CDN public standard Tailwind CSS + alignement des polices Fira -->
+  <!-- CDN public standard Tailwind CSS + alignement des polices Inter / Fira Code -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     if (typeof tailwind !== 'undefined') {
@@ -19,7 +19,7 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['"Fira Sans"', '"Inter"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+              sans: ['"Inter"', '"Fira Sans"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
               mono: ['"Fira Code"', '"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace']
             }
           }
@@ -28,25 +28,28 @@
     }
   </script>
 
-  <!-- Feuille de style autonome de secours (Fallback 100% hors-ligne) -->
+  <!-- Feuille de style autonome de secours (Obsidian Craft · Fallback 100% hors-ligne) -->
   <style>
     :root {
       color-scheme: dark;
-      --background: #060913;
-      --foreground: #f8fafc;
-      --card: #0c1220;
-      --card-elevated: #11192b;
-      --card-hero: #0f182a;
-      --border: #1e293b;
-      --border-strong: #334155;
-      --muted: #131b2e;
-      --muted-foreground: #94a3b8;
-      --ring: #38bdf8;
-      --accent-emerald: #10b981;
-      --accent-rose: #f43f5e;
-      --accent-sky: #38bdf8;
-      --accent-indigo: #818cf8;
-      --accent-amber: #f59e0b;
+      --background: #09090B;
+      --foreground: #FAFAFA;
+      --card: #111114;
+      --card-elevated: #16161B;
+      --card-hero: #131317;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --muted: #141418;
+      --muted-foreground: #A1A1AA;
+      --ring: #10B981;
+      --accent-emerald: #10B981;
+      --accent-rose: #F43F5E;
+      --accent-sky: #38BDF8;
+      --accent-indigo: #818CF8;
+      --accent-amber: #F59E0B;
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
     }
     *, *::before, *::after {
       box-sizing: border-box;
@@ -54,7 +57,7 @@
     html, body {
       overflow-x: hidden;
       max-width: 100%;
-      scrollbar-color: #334155 #060913;
+      scrollbar-color: #27272A #09090B;
       scrollbar-width: thin;
     }
     html {
@@ -62,17 +65,16 @@
     }
     body {
       background-color: var(--background);
-      background-image: radial-gradient(ellipse 80% 42% at 50% -10%, rgba(56, 189, 248, 0.055), transparent);
       color: var(--foreground);
-      font-family: "Fira Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Inter", "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
       padding: 1.25rem;
       line-height: 1.45;
       -webkit-font-smoothing: antialiased;
     }
     ::selection {
-      background-color: rgba(56, 189, 248, 0.28);
-      color: #f8fafc;
+      background-color: rgba(16, 185, 129, 0.24);
+      color: #FAFAFA;
     }
     @media (max-width: 639px) {
       body { padding: 0.75rem; }
@@ -82,7 +84,7 @@
       font-variant-numeric: tabular-nums;
     }
     .font-sans {
-      font-family: "Fira Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Inter", "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .max-w-7xl { max-width: 86rem; width: 100%; min-width: 0; margin-left: auto; margin-right: auto; }
     .max-w-full { max-width: 100%; }
@@ -267,7 +269,7 @@
     .w-3\.5 { width: 0.875rem; }
     .h-3\.5 { height: 0.875rem; }
     .h-0\.5 { height: 0.125rem; }
-    .overflow-x-auto { overflow-x: auto; scrollbar-color: #334155 #0c1220; scrollbar-width: thin; }
+    .overflow-x-auto { overflow-x: auto; scrollbar-color: #27272A #09090B; scrollbar-width: thin; }
     .overflow-hidden { overflow: hidden; }
     .max-h-96 { max-height: 28rem; }
     .sticky { position: sticky; }
@@ -275,10 +277,8 @@
     .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
     .border-collapse { border-collapse: collapse; }
     .divide-y > * + * { border-top: 1px solid var(--border); }
-    tbody tr { transition: background-color 0.15s ease; }
-    tbody tr:hover { background-color: rgba(56, 189, 248, 0.05); }
+    tbody tr { transition: background-color 140ms var(--ease-out); }
     a { color: inherit; text-decoration: none; }
-    a:hover { text-decoration: underline; }
     button { cursor: pointer; border: none; font-family: inherit; background: transparent; color: inherit; }
     button:disabled { opacity: 0.55; cursor: wait; }
     button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-visible {
@@ -298,7 +298,7 @@
       min-height: 34px;
       outline: none;
       caret-color: var(--ring);
-      transition: border-color 0.15s ease, background-color 0.15s ease;
+      transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out);
     }
     input::placeholder { color: var(--muted-foreground); opacity: 0.85; }
     input:focus, select:focus { border-color: var(--ring); background-color: var(--card-elevated); }
@@ -307,27 +307,34 @@
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       padding: 1rem 1.1rem;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-      transition: border-color 0.15s ease, background-color 0.15s ease;
-    }
-    .kpi-card:hover {
-      border-color: var(--border-strong);
-      background-color: var(--card-elevated);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out);
     }
     .kpi-card-primary {
-      background: linear-gradient(180deg, rgba(17, 25, 43, 0.92) 0%, rgba(12, 18, 32, 0.98) 100%);
-      border-color: rgba(51, 65, 85, 0.72);
+      background: linear-gradient(180deg, #16161B 0%, #111114 100%);
+      border-color: rgba(255, 255, 255, 0.11);
       padding: 1.15rem 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
     .kpi-card-compact {
       background-color: var(--card);
       border: 1px solid var(--border);
       border-radius: 0.65rem;
       padding: 0.78rem 1rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+    .kpi-display {
+      letter-spacing: -0.025em;
+      font-variant-numeric: tabular-nums;
+      transition: opacity 160ms var(--ease-out), filter 160ms var(--ease-out);
+    }
+    .kpi-display.kpi-swapping {
+      opacity: 0.45;
+      filter: blur(2px);
     }
     .passive-summary-card {
-      background-color: rgba(19, 27, 46, 0.58);
-      border: 1px dashed rgba(51, 65, 85, 0.85);
+      background-color: rgba(20, 20, 24, 0.65);
+      border: 1px dashed rgba(255, 255, 255, 0.14);
       border-radius: 0.75rem;
       padding: 1rem;
     }
@@ -354,20 +361,57 @@
       align-items: center;
       justify-content: center;
       gap: 0.35rem;
-      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 160ms var(--ease-out);
       white-space: nowrap;
       max-width: 100%;
     }
-    .ctrl-btn:hover {
-      color: var(--foreground);
-      background-color: rgba(255, 255, 255, 0.05);
-    }
     .ctrl-btn.active {
-      background-color: #1e293b;
-      color: #ffffff;
-      border-color: rgba(148, 163, 184, 0.34);
+      background-color: #222228;
+      color: #FAFAFA;
+      border-color: rgba(255, 255, 255, 0.16);
       font-weight: 600;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    }
+    .pf-clip-tabs {
+      position: relative;
+    }
+    .pf-clip-tabs .ctrl-btn {
+      font-weight: 600;
+    }
+    .pf-clip-tabs.pf-clip-ready .ctrl-btn.active {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: none;
+    }
+    .pf-clip-overlay {
+      position: absolute;
+      inset: 0.2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      pointer-events: none;
+      background-color: #FAFAFA;
+      border-radius: 0.375rem;
+      clip-path: inset(0px 100% 0px 0px round 0.375rem);
+      transition: clip-path 260ms var(--ease-in-out);
+      opacity: 0;
+    }
+    .pf-clip-tabs.pf-clip-ready .pf-clip-overlay {
+      opacity: 1;
+    }
+    .pf-clip-clone {
+      padding: 0.36rem 0.66rem;
+      min-height: 30px;
+      border: 1px solid transparent;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #09090B;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      user-select: none;
     }
     #btn-pending::before {
       content: "";
@@ -433,11 +477,7 @@
       justify-content: center;
       gap: 0.42rem;
       white-space: nowrap;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
-    }
-    .btn-refresh:hover {
-      background-color: var(--card-elevated);
-      border-color: var(--ring);
+      transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 160ms var(--ease-out);
     }
     .btn-ghost {
       padding: 0.38rem 0.72rem;
@@ -453,17 +493,12 @@
       justify-content: center;
       gap: 0.35rem;
       white-space: nowrap;
-      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    }
-    .btn-ghost:hover {
-      color: var(--foreground);
-      border-color: var(--border-strong);
-      background-color: var(--card-elevated);
+      transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out), transform 160ms var(--ease-out);
     }
     .btn-ghost.active {
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.45);
-      background-color: rgba(56, 189, 248, 0.12);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.45);
+      background-color: rgba(16, 185, 129, 0.12);
       font-weight: 600;
     }
     .search-wrap {
@@ -489,10 +524,7 @@
       color: var(--muted-foreground);
       font-size: 0.9rem;
       line-height: 1;
-    }
-    .search-clear:hover {
-      color: var(--foreground);
-      background-color: rgba(255, 255, 255, 0.08);
+      transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out);
     }
     .tooltip-card {
       background-color: var(--card-elevated);
@@ -500,13 +532,13 @@
       color: var(--foreground);
       border-radius: 0.65rem;
       padding: 0.75rem 0.85rem;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.58);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
       min-width: 245px;
       max-width: calc(100% - 16px);
       font-size: 0.75rem;
     }
     .quant-lab-panel {
-      background-color: rgba(19, 27, 46, 0.72);
+      background-color: rgba(20, 20, 24, 0.85);
       border: 1px solid var(--border);
       border-radius: 0.65rem;
       padding: 0.85rem;
@@ -514,11 +546,8 @@
     .sport-row-clickable {
       cursor: pointer;
     }
-    .sport-row-clickable:hover {
-      background-color: rgba(56, 189, 248, 0.08);
-    }
     .sport-row-active {
-      background-color: rgba(56, 189, 248, 0.13) !important;
+      background-color: rgba(16, 185, 129, 0.10) !important;
     }
     .table-scroll-wrap {
       position: relative;
@@ -528,40 +557,97 @@
       height: 7px;
     }
     ::-webkit-scrollbar-track {
-      background: #0c1220;
+      background: #09090B;
       border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb {
-      background: #334155;
+      background: #27272A;
       border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #475569;
+      background: #3F3F46;
     }
     ::-webkit-scrollbar-corner {
-      background: #0c1220;
+      background: #09090B;
     }
     .portfolio-card {
       cursor: pointer;
-      transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .portfolio-card:hover {
-      border-color: var(--border-strong);
-      background-color: var(--card-elevated);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out), transform 160ms var(--ease-out);
     }
     .portfolio-card.selected-pf {
-      border-color: rgba(56, 189, 248, 0.6);
+      border-color: rgba(16, 185, 129, 0.55);
       background-color: var(--card-elevated);
-      box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.25);
+      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.22);
+    }
+    .ctrl-btn:active, .btn-refresh:active, .btn-ghost:active, .portfolio-card:active {
+      transform: scale(0.97);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      a:hover { text-decoration: underline; }
+      tbody tr:hover { background-color: rgba(255, 255, 255, 0.03); }
+      .kpi-card:hover {
+        border-color: var(--border-strong);
+        background-color: var(--card-elevated);
+      }
+      .ctrl-btn:hover {
+        color: var(--foreground);
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+      .pf-clip-tabs.pf-clip-ready .ctrl-btn.active:hover {
+        background-color: transparent;
+      }
+      .btn-refresh:hover {
+        background-color: var(--card-elevated);
+        border-color: var(--ring);
+      }
+      .btn-ghost:hover {
+        color: var(--foreground);
+        border-color: var(--border-strong);
+        background-color: var(--card-elevated);
+      }
+      .search-clear:hover {
+        color: var(--foreground);
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+      .sport-row-clickable:hover {
+        background-color: rgba(16, 185, 129, 0.07);
+      }
+      .portfolio-card:hover {
+        border-color: var(--border-strong);
+        background-color: var(--card-elevated);
+      }
     }
     .svg-dot {
       cursor: pointer;
-      transition: r 0.12s ease, stroke-width 0.12s ease;
+      transition: r 120ms var(--ease-out), stroke-width 120ms var(--ease-out);
     }
     .svg-dot:focus {
       outline: none;
-      stroke: #38bdf8;
+      stroke: #10B981;
       stroke-width: 2.6;
+    }
+    .fluxo-live-toast {
+      position: fixed;
+      right: 1.25rem;
+      bottom: 1.25rem;
+      z-index: 55;
+      max-width: min(23rem, calc(100vw - 2rem));
+      background-color: var(--card-elevated);
+      color: var(--foreground);
+      border: 1px solid var(--border-strong);
+      border-radius: 0.75rem;
+      padding: 0.78rem 0.92rem;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transform: translateY(130%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 380ms var(--ease-drawer), opacity 220ms var(--ease-out);
+    }
+    .fluxo-live-toast.is-visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
     }
     @media (max-width: 639px) {
       .ctrl-btn {
@@ -589,8 +675,8 @@
     .z-10 { z-index: 10; }
     .z-50 { z-index: 50; }
     .cursor-pointer { cursor: pointer; }
-    .transition-all { transition: all 0.15s ease-in-out; }
-    .transition-colors { transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out; }
+    .transition-all { transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out), opacity 150ms var(--ease-out); }
+    .transition-colors { transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out); }
     .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     .spin-anim { animation: spin 0.9s linear infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
@@ -601,6 +687,9 @@
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
       }
+      .kpi-display.kpi-swapping {
+        filter: none;
+      }
     }
     .fluxo-gate-overlay {
       position: fixed;
@@ -610,7 +699,7 @@
       align-items: center;
       justify-content: center;
       padding: 1rem;
-      background: rgba(6, 9, 19, 0.94);
+      background: rgba(9, 9, 11, 0.94);
       backdrop-filter: blur(8px);
     }
     .fluxo-gate-card {
@@ -670,10 +759,15 @@
 
         <!-- Global Scope Selector (Portefeuille + Sport + Réinitialisation + Actualisation) -->
         <div class="flex flex-wrap items-center gap-1.5 shrink-0 min-w-0 max-w-full">
-          <div class="ctrl-group" role="group" aria-label="Sélecteur de portefeuille">
+          <div id="pf-clip-group" class="ctrl-group pf-clip-tabs" role="group" aria-label="Sélecteur de portefeuille">
             <button onclick="setPortfolio('ALL')" id="pf-ALL" class="ctrl-btn active" aria-pressed="true">Global</button>
             <button onclick="setPortfolio('croissant_world')" id="pf-croissant_world" class="ctrl-btn" aria-pressed="false">World</button>
             <button onclick="setPortfolio('croissant_france')" id="pf-croissant_france" class="ctrl-btn" aria-pressed="false">France</button>
+            <div id="pf-clip-overlay" class="pf-clip-overlay" aria-hidden="true">
+              <span class="pf-clip-clone" data-pf="ALL">Global</span>
+              <span class="pf-clip-clone" data-pf="croissant_world">World</span>
+              <span class="pf-clip-clone" data-pf="croissant_france">France</span>
+            </div>
           </div>
 
           <select id="sport-filter-select" onchange="setSportFilter(this.value)" aria-label="Filtrer tout le terminal par sport">
@@ -721,7 +815,7 @@
             </span>
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-init-label">Base 0,00 €</span>
           </div>
-          <div class="text-3xl font-bold text-emerald-400 mt-2 font-mono whitespace-nowrap" id="kpi-final-cap">0,00 €</div>
+          <div class="text-3xl font-bold text-emerald-400 mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-final-cap">0,00 €</div>
           <div class="text-xs mt-1.5 flex flex-wrap items-center gap-2 font-mono">
             <span class="text-emerald-400 font-semibold whitespace-nowrap" id="kpi-net-pnl">+0,00 € net</span>
             <span class="text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-roi">(+0,0 % ROI)</span>
@@ -737,7 +831,7 @@
             </span>
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-staked-vol-top">Volume 0,00 €</span>
           </div>
-          <div class="text-3xl font-bold text-[var(--foreground)] mt-2 font-mono whitespace-nowrap" id="kpi-gross-pnl">+0,00 €</div>
+          <div class="text-3xl font-bold text-[var(--foreground)] mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-gross-pnl">+0,00 €</div>
           <div class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono" id="kpi-gross-sub">
             Avant frais d'abonnement · 0W / 0L / 0V
           </div>
@@ -752,7 +846,7 @@
             </span>
             <a href="#section-pending" class="text-xs font-mono text-sky-400 whitespace-nowrap">Voir le détail ↓</a>
           </div>
-          <div class="text-3xl font-bold text-amber-400 mt-2 font-mono whitespace-nowrap" id="kpi-pending-count">0 paris</div>
+          <div class="text-3xl font-bold text-amber-400 mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-pending-count">0 paris</div>
           <div class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono flex flex-wrap items-center gap-x-2 gap-y-0.5" id="kpi-exposure-sub">
             <span class="whitespace-nowrap">Engagé : 0,00 €</span>
             <span aria-hidden="true">·</span>
@@ -770,7 +864,7 @@
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-avg-odds">Cote moy. -</span>
           </div>
           <div class="flex flex-wrap items-baseline justify-between gap-2 mt-1">
-            <div class="text-xl font-bold text-sky-400 font-mono whitespace-nowrap" id="kpi-winrate">0,0 %</div>
+            <div class="text-xl font-bold text-sky-400 font-mono whitespace-nowrap kpi-display" id="kpi-winrate">0,0 %</div>
             <div class="text-xs text-[var(--muted-foreground)] font-mono whitespace-nowrap" id="kpi-wlv-breakdown">
               0W / 0L / 0V (0)
             </div>
@@ -784,7 +878,7 @@
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-max-dd">Max DD -0,00 €</span>
           </div>
           <div class="flex flex-wrap items-baseline justify-between gap-2 mt-1">
-            <div class="text-xl font-bold text-emerald-400 font-mono whitespace-nowrap" id="kpi-yield">+0,0 %</div>
+            <div class="text-xl font-bold text-emerald-400 font-mono whitespace-nowrap kpi-display" id="kpi-yield">+0,0 %</div>
             <div class="text-xs text-[var(--muted-foreground)] font-mono whitespace-nowrap" id="kpi-staked-vol">
               Tranché : 0,00 €
             </div>
@@ -798,7 +892,7 @@
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-clv-w">Pond. +0,0 %</span>
           </div>
           <div class="flex flex-wrap items-baseline justify-between gap-2 mt-1">
-            <div class="text-xl font-bold text-amber-400 font-mono whitespace-nowrap" id="kpi-clv-avg">+0,0 %</div>
+            <div class="text-xl font-bold text-amber-400 font-mono whitespace-nowrap kpi-display" id="kpi-clv-avg">+0,0 %</div>
             <div class="text-xs text-emerald-400 font-mono whitespace-nowrap" id="kpi-clv-beat">
               0/0 (0,0 %) &gt; clôture
             </div>
@@ -982,7 +1076,7 @@
         </div>
 
         <!-- SVG Canvas -->
-        <div class="relative w-full overflow-hidden transition-all" style="min-height: 270px; max-height: 650px;" id="chart-box">
+        <div class="relative w-full overflow-hidden" style="min-height: 270px; max-height: 650px;" id="chart-box">
           <svg id="equity-svg" role="img" aria-label="Courbe d'évolution du capital Fluxo" style="width: 100%; display: block;"></svg>
           <div id="chart-empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-2.5 p-6 text-center bg-[var(--card)]">
             <p class="text-sm font-medium text-[var(--foreground)]" id="chart-empty-title">Aucun pari réglé pour cette sélection</p>
@@ -1011,6 +1105,7 @@
             <span class="whitespace-nowrap">Engagé : <strong class="text-amber-400" id="pending-total-stake">0,00 €</strong></span>
             <span class="text-[var(--muted-foreground)]" aria-hidden="true">|</span>
             <span class="whitespace-nowrap">Retour pot. : <strong class="text-emerald-400" id="pending-total-pot">0,00 €</strong></span>
+            <span id="pending-next-eta-wrap" class="hidden"><span class="text-[var(--muted-foreground)]" aria-hidden="true">|</span> <span class="whitespace-nowrap">Prochaine clôture : <strong class="text-sky-300" id="pending-next-eta">—</strong></span></span>
           </div>
         </div>
         <div class="table-scroll-wrap overflow-x-auto max-h-96 rounded-lg border border-[var(--border)]">
@@ -1026,6 +1121,7 @@
                 <th class="p-2.5 text-right whitespace-nowrap">Vraie Cote</th>
                 <th class="p-2.5 text-right whitespace-nowrap">Vraie Mise</th>
                 <th class="p-2.5 text-right whitespace-nowrap">Retour Potentiel</th>
+                <th class="p-2.5 text-center whitespace-nowrap">Clôture est.</th>
                 <th class="p-2.5 text-center whitespace-nowrap">Statut</th>
               </tr>
             </thead>
@@ -1171,11 +1267,23 @@
         <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">TÉLÉMÉTRIE OS STEALTH : N/A (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-23 17:40:16</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-23 23:52:04</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
 
+  </div>
+
+  <!-- Notification Live Sonner-Style (Toast réglé à chaud, interruptible) -->
+  <div id="fluxo-live-toast" class="fluxo-live-toast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="flex items-start gap-2.5">
+      <span id="fluxo-toast-dot" class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+      <div class="min-w-0 flex-1">
+        <div id="fluxo-toast-title" class="text-xs font-semibold text-[var(--foreground)] leading-snug"></div>
+        <div id="fluxo-toast-body" class="text-[11px] font-mono text-[var(--muted-foreground)] mt-0.5 leading-snug"></div>
+      </div>
+      <button type="button" onclick="dismissLiveToast()" class="text-xs text-[var(--muted-foreground)] px-1 leading-none" aria-label="Fermer la notification">×</button>
+    </div>
   </div>
 
   <script>
@@ -1189,7 +1297,7 @@
     let worldSub = 0.0;
     let franceSub = 0.0;
     let subDateStr = null;
-    let snapshotGeneratedIso = "2026-11-23T17:40:16";
+    let snapshotGeneratedIso = "2026-11-23T23:52:04";
     let lyceeSyncIso = "";
     let lyceeBotPid = "N/A";
     let lyceePageState = "IDLE";
@@ -1237,6 +1345,96 @@
     let _lastFilteredHistory = [];
     let _pinnedTooltipDot = null;
     let _refreshInFlight = false;
+    let _hasHydratedLiveOnce = !initialDataRedacted;
+    let _liveToastTimer = null;
+    let _kpiBlurTimer = null;
+
+    function updatePortfolioClipOverlay() {
+      const group = document.getElementById('pf-clip-group');
+      const overlay = document.getElementById('pf-clip-overlay');
+      const firstBtn = document.getElementById('pf-ALL');
+      const activeBtn = document.getElementById('pf-' + state.portfolio);
+      if (!group || !overlay || !firstBtn || !activeBtn) return;
+
+      const ovRect = overlay.getBoundingClientRect();
+      const firstRect = firstBtn.getBoundingClientRect();
+      const actRect = activeBtn.getBoundingClientRect();
+      if (ovRect.width <= 0 || actRect.width <= 0 || Math.abs(actRect.top - firstRect.top) > 4) {
+        group.classList.remove('pf-clip-ready');
+        return;
+      }
+
+      const clones = overlay.querySelectorAll('.pf-clip-clone');
+      for (let i = 0; i < clones.length; i++) {
+        const pfKey = clones[i].getAttribute('data-pf');
+        const srcBtn = pfKey ? document.getElementById('pf-' + pfKey) : null;
+        if (srcBtn) {
+          clones[i].style.width = srcBtn.getBoundingClientRect().width.toFixed(2) + 'px';
+        }
+      }
+
+      const leftPx = Math.max(0, actRect.left - ovRect.left);
+      const rightPx = Math.max(0, ovRect.right - actRect.right);
+      overlay.style.clipPath = 'inset(0px ' + rightPx.toFixed(1) + 'px 0px ' + leftPx.toFixed(1) + 'px round 0.375rem)';
+      group.classList.add('pf-clip-ready');
+    }
+
+    function triggerKpiSwapBlur() {
+      const ids = ['kpi-final-cap', 'kpi-gross-pnl', 'kpi-pending-count', 'kpi-winrate', 'kpi-yield', 'kpi-clv-avg'];
+      for (let i = 0; i < ids.length; i++) {
+        const el = document.getElementById(ids[i]);
+        if (el) el.classList.add('kpi-swapping');
+      }
+      if (_kpiBlurTimer) clearTimeout(_kpiBlurTimer);
+      _kpiBlurTimer = setTimeout(() => {
+        for (let j = 0; j < ids.length; j++) {
+          const el2 = document.getElementById(ids[j]);
+          if (el2) el2.classList.remove('kpi-swapping');
+        }
+        _kpiBlurTimer = null;
+      }, 150);
+    }
+
+    function dismissLiveToast() {
+      if (_liveToastTimer) {
+        clearTimeout(_liveToastTimer);
+        _liveToastTimer = null;
+      }
+      const toast = document.getElementById('fluxo-live-toast');
+      if (toast) toast.classList.remove('is-visible');
+    }
+
+    function showLiveSettledToast(bet, addedCount, balanceVal) {
+      const toast = document.getElementById('fluxo-live-toast');
+      const dotEl = document.getElementById('fluxo-toast-dot');
+      const titleEl = document.getElementById('fluxo-toast-title');
+      const bodyEl = document.getElementById('fluxo-toast-body');
+      if (!toast || !titleEl || !bodyEl || !bet) return;
+
+      const res = String(bet.res || '').toUpperCase();
+      const isWin = res === 'WON' || res === 'HALF_WON';
+      const isLoss = res === 'LOST' || res === 'HALF_LOST';
+      const pnlStr = fmtEurJS(bet.p || 0, true);
+      const resLabel = isWin ? 'Pari gagné' : (isLoss ? 'Pari perdu' : (res === 'CASHOUT' ? 'Cashout' : 'Pari réglé'));
+      const prefix = addedCount > 1 ? ('+' + addedCount + ' réglés · ') : '';
+
+      if (dotEl) {
+        dotEl.className = 'w-2 h-2 rounded-full mt-1.5 shrink-0 ' + (isWin ? 'bg-emerald-400' : (isLoss ? 'bg-rose-400' : 'bg-sky-400'));
+      }
+      titleEl.textContent = prefix + resLabel + ' · ' + pnlStr;
+      let sub = String(bet.m || 'Match');
+      if (sub.length > 44) sub = sub.slice(0, 41) + '...';
+      if (balanceVal !== null && balanceVal !== undefined && !isNaN(Number(balanceVal))) {
+        sub += ' · Solde ' + fmtEurJS(Number(balanceVal), false);
+      }
+      bodyEl.textContent = sub;
+
+      toast.classList.add('is-visible');
+      if (_liveToastTimer) clearTimeout(_liveToastTimer);
+      _liveToastTimer = setTimeout(() => {
+        dismissLiveToast();
+      }, 6500);
+    }
 
     function fmtEurJS(val, withSign) {
       if (withSign === undefined) withSign = true;
@@ -1692,6 +1890,8 @@
         autoBtn.className = 'btn-ghost' + (state.autoRefresh ? ' active' : '');
         autoBtn.setAttribute('aria-pressed', state.autoRefresh ? 'true' : 'false');
       }
+
+      updatePortfolioClipOverlay();
     }
 
     function updateDashboard() {
@@ -1836,7 +2036,7 @@
       document.getElementById('kpi-init-label').textContent = `Base ${fmtEurJS(traj.startCap, false)}`;
       const finalCapEl = document.getElementById('kpi-final-cap');
       finalCapEl.textContent = fmtEurJS(traj.finalCap, false);
-      finalCapEl.className = `text-3xl font-bold mt-2 font-mono whitespace-nowrap ${netPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      finalCapEl.className = `text-3xl font-bold mt-2 font-mono whitespace-nowrap kpi-display ${netPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
       const netPnlEl = document.getElementById('kpi-net-pnl');
       netPnlEl.textContent = `${fmtEurJS(netPnl)} net`;
@@ -1845,7 +2045,7 @@
 
       const grossEl = document.getElementById('kpi-gross-pnl');
       grossEl.textContent = fmtEurJS(grossPnl);
-      grossEl.className = `text-3xl font-bold mt-2 font-mono whitespace-nowrap ${grossPnl >= 0 ? 'text-[var(--foreground)]' : 'text-rose-400'}`;
+      grossEl.className = `text-3xl font-bold mt-2 font-mono whitespace-nowrap kpi-display ${grossPnl >= 0 ? 'text-[var(--foreground)]' : 'text-rose-400'}`;
       const volTopEl = document.getElementById('kpi-staked-vol-top');
       if (volTopEl) volTopEl.textContent = `Volume ${fmtEurJS(stakedDec, false)}`;
       const grossSubEl = document.getElementById('kpi-gross-sub');
@@ -1854,7 +2054,7 @@
       const pendCountEl = document.getElementById('kpi-pending-count');
       if (pendCountEl) {
         pendCountEl.textContent = `${scopePending.length} ${scopePending.length === 1 ? 'pari' : 'paris'}`;
-        pendCountEl.className = `text-3xl font-bold mt-2 font-mono whitespace-nowrap ${scopePending.length > 0 ? 'text-amber-400' : 'text-[var(--muted-foreground)]'}`;
+        pendCountEl.className = `text-3xl font-bold mt-2 font-mono whitespace-nowrap kpi-display ${scopePending.length > 0 ? 'text-amber-400' : 'text-[var(--muted-foreground)]'}`;
       }
       const expSubEl = document.getElementById('kpi-exposure-sub');
       if (expSubEl) {
@@ -1868,7 +2068,7 @@
 
       const yldEl = document.getElementById('kpi-yield');
       yldEl.textContent = fmtPctJS(yieldPct);
-      yldEl.className = `text-xl font-bold font-mono whitespace-nowrap ${yieldPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      yldEl.className = `text-xl font-bold font-mono whitespace-nowrap kpi-display ${yieldPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
       document.getElementById('kpi-max-dd').textContent = `Max DD -${fmtEurJS(traj.maxDD, false)}`;
       document.getElementById('kpi-staked-vol').textContent = `Tranché : ${fmtEurJS(stakedDec, false)}`;
 
@@ -2082,10 +2282,10 @@
           const wantsLbl = isZero || tickIndex === 0 || (tickIndex % labelStride === 0) || (gv + step > yMax + 1e-6);
           const showLbl = wantsLbl && Math.abs(y - lastLabelY) >= 18;
           if (showLbl || totalTicks <= 45) {
-            svgHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#94a3b8" stroke-opacity="${isZero ? 0.32 : 0.11}" stroke-width="${isZero ? 1.5 : 1}" stroke-dasharray="${isZero ? '4 4' : 'none'}" />`;
+            svgHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#A1A1AA" stroke-opacity="${isZero ? 0.28 : 0.09}" stroke-width="${isZero ? 1.5 : 1}" stroke-dasharray="${isZero ? '4 4' : 'none'}" />`;
           }
           if (showLbl) {
-            svgHtml += `<text x="${padL - 8}" y="${y + 4}" fill="#94a3b8" font-size="${axisFontSize}" text-anchor="end" font-family="Fira Code, ui-monospace, monospace">${fmtAxisEurJS(roundedGv, true)}</text>`;
+            svgHtml += `<text x="${padL - 8}" y="${y + 4}" fill="#A1A1AA" font-size="${axisFontSize}" text-anchor="end" font-family="Fira Code, ui-monospace, monospace">${fmtAxisEurJS(roundedGv, true)}</text>`;
             lastLabelY = y;
           }
           tickIndex++;
@@ -2103,7 +2303,7 @@
             if (len <= 45 || idx === len - 1 || idx % Math.ceil(len / 30) === 0) {
               const r = len <= 15 ? 4.4 : 3.2;
               const ariaLbl = escapeHtml(`${pfName} — Pari #${idx + 1}/${len} : PnL ${fmtEurJS(pt.pnlCum)}`);
-              dotsHtml += `<circle cx="${x}" cy="${y}" r="${r}" fill="${color}" stroke="#0c1220" stroke-width="1.4" tabindex="0" role="button" aria-label="${ariaLbl}" class="svg-dot compare-dot" data-pf="${escapeHtml(pfName)}" data-seq="${idx + 1}" data-total="${len}" data-pnl="${pt.pnlCum.toFixed(2)}" data-date="${escapeHtml(pt.d || '')}" />`;
+              dotsHtml += `<circle cx="${x}" cy="${y}" r="${r}" fill="${color}" stroke="#111114" stroke-width="1.4" tabindex="0" role="button" aria-label="${ariaLbl}" class="svg-dot compare-dot" data-pf="${escapeHtml(pfName)}" data-seq="${idx + 1}" data-total="${len}" data-pnl="${pt.pnlCum.toFixed(2)}" data-date="${escapeHtml(pt.d || '')}" />`;
             }
           });
           const pathD = `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />`;
@@ -2114,12 +2314,12 @@
         const fRes = buildPath(fTraj, '#818cf8', 'croissant_france · PMU Sport');
         svgHtml += wRes.pathD + fRes.pathD + wRes.dotsHtml + fRes.dotsHtml;
 
-        svgHtml += `<line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#334155" stroke-width="1" />`;
+        svgHtml += `<line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#27272A" stroke-width="1" />`;
         [0, 0.25, 0.5, 0.75, 1.0].forEach(pct => {
           const x = padL + pct * plotW;
           const pctLabel = `${Math.round(pct * 100)} %`;
-          svgHtml += `<line x1="${x}" y1="${H - padB}" x2="${x}" y2="${H - padB + 5}" stroke="#475569" stroke-width="1" />`;
-          svgHtml += `<text x="${x}" y="${H - 12}" fill="#94a3b8" font-size="${axisFontSize - 0.5}" text-anchor="middle" font-family="Fira Code, ui-monospace, monospace">${pctLabel}</text>`;
+          svgHtml += `<line x1="${x}" y1="${H - padB}" x2="${x}" y2="${H - padB + 5}" stroke="#3F3F46" stroke-width="1" />`;
+          svgHtml += `<text x="${x}" y="${H - 12}" fill="#A1A1AA" font-size="${axisFontSize - 0.5}" text-anchor="middle" font-family="Fira Code, ui-monospace, monospace">${pctLabel}</text>`;
         });
 
         svg.innerHTML = svgHtml;
@@ -2343,10 +2543,10 @@
         const wantsLbl = isBase || tickIndex === 0 || (tickIndex % labelStride === 0) || (gv + step > dynMax + 1e-6);
         const showLbl = wantsLbl && Math.abs(y - lastLabelY) >= 18;
         if (showLbl || totalTicks <= 45) {
-          svgHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#94a3b8" stroke-opacity="${isBase ? 0.34 : 0.11}" stroke-width="${isBase ? 1.4 : 1}" stroke-dasharray="${isBase ? '4 4' : 'none'}" />`;
+          svgHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#A1A1AA" stroke-opacity="${isBase ? 0.30 : 0.09}" stroke-width="${isBase ? 1.4 : 1}" stroke-dasharray="${isBase ? '4 4' : 'none'}" />`;
         }
         if (showLbl) {
-          svgHtml += `<text x="${padL - 8}" y="${y + 4}" fill="#94a3b8" font-size="${axisFontSize}" text-anchor="end" font-family="Fira Code, ui-monospace, monospace">${fmtAxisEurJS(roundedGv, false)}</text>`;
+          svgHtml += `<text x="${padL - 8}" y="${y + 4}" fill="#A1A1AA" font-size="${axisFontSize}" text-anchor="end" font-family="Fira Code, ui-monospace, monospace">${fmtAxisEurJS(roundedGv, false)}</text>`;
           lastLabelY = y;
         }
         tickIndex++;
@@ -2359,7 +2559,7 @@
       });
 
       // X-Axis baseline & responsive ticks
-      svgHtml += `<line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#334155" stroke-width="1" />`;
+      svgHtml += `<line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#27272A" stroke-width="1" />`;
       const maxXTicks = isCompact ? 4 : 8;
       const tickCount = Math.min(displaySeries.length, maxXTicks);
       for (let t = 0; t < tickCount; t++) {
@@ -2367,11 +2567,11 @@
         const pt = pts[sIdx + 1];
         const b = displaySeries[sIdx];
         const label = state.xAxis === 'DATE' ? fmtDateFR(b.d).slice(0, 5) : `#${b.seq}`;
-        svgHtml += `<line x1="${pt.x}" y1="${H - padB}" x2="${pt.x}" y2="${H - padB + 5}" stroke="#475569" stroke-width="1" />`;
-        svgHtml += `<text x="${pt.x}" y="${H - 12}" fill="#94a3b8" font-size="${axisFontSize - 0.5}" text-anchor="middle" font-family="Fira Code, ui-monospace, monospace">${label}</text>`;
+        svgHtml += `<line x1="${pt.x}" y1="${H - padB}" x2="${pt.x}" y2="${H - padB + 5}" stroke="#3F3F46" stroke-width="1" />`;
+        svgHtml += `<text x="${pt.x}" y="${H - 12}" fill="#A1A1AA" font-size="${axisFontSize - 0.5}" text-anchor="middle" font-family="Fira Code, ui-monospace, monospace">${label}</text>`;
       }
 
-      // Main Path & Area
+      // Main Path & 5-stop Eased Area Gradient
       let pathD = `M ${pts[0].x} ${pts[0].y}`;
       for (let i = 1; i < pts.length; i++) {
         pathD += ` L ${pts[i].x} ${pts[i].y}`;
@@ -2379,7 +2579,14 @@
 
       const baseY = getY(windowStartCap);
       const areaD = pathD + ` L ${pts[pts.length - 1].x} ${baseY} L ${pts[0].x} ${baseY} Z`;
-      svgHtml += `<path d="${areaD}" fill="${lineColor}" fill-opacity="0.10" />`;
+      svgHtml += `<defs><linearGradient id="fluxo-equity-grad" x1="0" y1="0" x2="0" y2="1">` +
+        `<stop offset="0%" stop-color="${lineColor}" stop-opacity="0.22" />` +
+        `<stop offset="22%" stop-color="${lineColor}" stop-opacity="0.13" />` +
+        `<stop offset="50%" stop-color="${lineColor}" stop-opacity="0.055" />` +
+        `<stop offset="78%" stop-color="${lineColor}" stop-opacity="0.016" />` +
+        `<stop offset="100%" stop-color="${lineColor}" stop-opacity="0" />` +
+        `</linearGradient></defs>`;
+      svgHtml += `<path d="${areaD}" fill="url(#fluxo-equity-grad)" />`;
 
       if (state.showHWM && pts.length > 1) {
         let hwmD = `M ${pts[0].x} ${pts[0].y}`;
@@ -2492,7 +2699,7 @@
           for (let i = 1; i < coords.length; i++) {
             const pt = coords[i];
             const ariaLbl = escapeHtml(`${typeLabel} : ${pt.bet ? pt.bet.m : ''} — Capital projeté ${fmtEurJS(pt.cap, false)}`);
-            svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="4.4" fill="${fillCol}" stroke="#0c1220" stroke-width="1.5" tabindex="0" role="button" aria-label="${ariaLbl}" class="svg-dot pred-dot" data-type="${typeKey}" data-pidx="${pt.pIdx}" />`;
+            svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="4.4" fill="${fillCol}" stroke="#111114" stroke-width="1.5" tabindex="0" role="button" aria-label="${ariaLbl}" class="svg-dot pred-dot" data-type="${typeKey}" data-pidx="${pt.pIdx}" />`;
           }
         };
 
@@ -2509,12 +2716,12 @@
         const b = pt.bet;
         const isEdge = pIndex === 1 || pIndex === pts.length - 1;
         if (!isEdge && dotStride > 1 && (pIndex % dotStride !== 0)) return;
-        let col = '#64748b';
+        let col = '#71717A';
         let r = isCompact ? 3.5 : 3.2;
         if (b.res === 'WON') { col = '#10b981'; r = isCompact ? 4.2 : 4.0; }
         else if (b.res === 'LOST') { col = '#f43f5e'; r = isCompact ? 4.2 : 4.0; }
         const ariaLbl = escapeHtml(`Pari #${b.seq} · ${b.m} · ${b.res} · PnL ${fmtEurJS(b.p)} · Capital ${fmtEurJS(b.cap, false)}`);
-        svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="${r}" fill="${col}" stroke="#0c1220" stroke-width="1.3" tabindex="0" role="button" aria-label="${ariaLbl}" class="svg-dot settled-dot" data-idx="${pt.idx}" />`;
+        svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="${r}" fill="${col}" stroke="#111114" stroke-width="1.3" tabindex="0" role="button" aria-label="${ariaLbl}" class="svg-dot settled-dot" data-idx="${pt.idx}" />`;
       });
 
       svg.innerHTML = svgHtml;
@@ -2683,14 +2890,171 @@
       });
     }
 
+    function parseLocalIsoTs(isoStr) {
+      if (!isoStr) return null;
+      const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(String(isoStr).trim());
+      if (!m) return null;
+      const dt = new Date(
+        parseInt(m[1], 10),
+        parseInt(m[2], 10) - 1,
+        parseInt(m[3], 10),
+        parseInt(m[4], 10),
+        parseInt(m[5], 10),
+        m[6] ? parseInt(m[6], 10) : 0
+      );
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+
+    function fmtClockHHMM(dt) {
+      if (!dt) return '';
+      const hh = String(dt.getHours()).padStart(2, '0');
+      const mi = String(dt.getMinutes()).padStart(2, '0');
+      return hh + 'h' + mi;
+    }
+
+    function formatEstimatedClose(pb, nowMs) {
+      const curMs = nowMs !== undefined ? nowMs : Date.now();
+      const koDt = parseLocalIsoTs(pb ? pb.ko_iso : null);
+      const estDt = parseLocalIsoTs(pb ? pb.est_close_iso : null);
+      if (!koDt || !estDt) {
+        return {
+          primary: '—',
+          sub: '',
+          cls: 'text-[var(--muted-foreground)]',
+          title: 'Heure de coup d’envoi non renseignée',
+          sortMs: null,
+          isOverdue: false
+        };
+      }
+      const koMs = koDt.getTime();
+      const estMs = estDt.getTime();
+      const awaitMs = koMs + 3 * 3600000;
+      const remMin = Math.round((estMs - curMs) / 60000);
+      const durSuffix = (pb && pb.est_dur_min) ? (' (+' + pb.est_dur_min + ' min)') : '';
+      const title = 'Coup d’envoi ' + fmtClockHHMM(koDt) + ' · Fin estimée ~' + fmtClockHHMM(estDt) + durSuffix;
+
+      if (Boolean(pb && pb.awaiting_result) || curMs >= awaitMs) {
+        return {
+          primary: 'Dépassée',
+          sub: 'KO ' + fmtClockHHMM(koDt),
+          cls: 'text-sky-300',
+          title: title,
+          sortMs: estMs,
+          isOverdue: true
+        };
+      }
+      if (curMs >= estMs) {
+        return {
+          primary: 'Imminente',
+          sub: 'fin ~' + fmtClockHHMM(estDt),
+          cls: 'text-emerald-400',
+          title: title,
+          sortMs: estMs,
+          isOverdue: false
+        };
+      }
+      if (curMs >= koMs) {
+        return {
+          primary: 'En cours · ~' + Math.max(1, remMin) + ' min',
+          sub: 'fin ~' + fmtClockHHMM(estDt),
+          cls: 'text-amber-300',
+          title: title,
+          sortMs: estMs,
+          isOverdue: false
+        };
+      }
+
+      let primary = '';
+      let sub = 'fin ~' + fmtClockHHMM(estDt);
+      if (remMin < 60) {
+        primary = '~' + Math.max(1, remMin) + ' min';
+      } else if (remMin < 24 * 60) {
+        const hrs = Math.floor(remMin / 60);
+        const mins = remMin % 60;
+        primary = '~' + hrs + 'h' + (mins > 0 ? String(mins).padStart(2, '0') : '');
+      } else {
+        const dd = String(estDt.getDate()).padStart(2, '0');
+        const mm = String(estDt.getMonth() + 1).padStart(2, '0');
+        primary = dd + '/' + mm + ' ~' + fmtClockHHMM(estDt);
+        sub = 'KO ' + fmtClockHHMM(koDt);
+      }
+      return {
+        primary: primary,
+        sub: sub,
+        cls: 'text-[var(--foreground)]',
+        title: title,
+        sortMs: estMs,
+        isOverdue: false
+      };
+    }
+
+    function buildEtaCellInnerHtml(eta) {
+      const pHtml = `<div class="text-xs font-semibold whitespace-nowrap ${eta.cls}">${escapeHtml(eta.primary)}</div>`;
+      const sHtml = eta.sub ? `<div class="text-[10px] text-[var(--muted-foreground)] whitespace-nowrap">${escapeHtml(eta.sub)}</div>` : '';
+      return pHtml + sHtml;
+    }
+
+    function updateNextPendingEtaBanner(list, nowMs) {
+      const wrap = document.getElementById('pending-next-eta-wrap');
+      const valEl = document.getElementById('pending-next-eta');
+      if (!wrap || !valEl) return;
+      if (!list || list.length === 0) {
+        wrap.classList.add('hidden');
+        return;
+      }
+      const curMs = nowMs !== undefined ? nowMs : Date.now();
+      let bestUpcoming = null;
+      let bestFallback = null;
+      for (let i = 0; i < list.length; i++) {
+        const pb = list[i];
+        const eta = formatEstimatedClose(pb, curMs);
+        if (eta.sortMs === null) continue;
+        if (!eta.isOverdue && (!bestUpcoming || eta.sortMs < bestUpcoming.sortMs)) {
+          bestUpcoming = eta;
+        }
+        if (!bestFallback || eta.sortMs < bestFallback.sortMs) {
+          bestFallback = eta;
+        }
+      }
+      const chosen = bestUpcoming || bestFallback;
+      if (!chosen) {
+        wrap.classList.add('hidden');
+        return;
+      }
+      valEl.textContent = chosen.primary + (chosen.sub ? (' (' + chosen.sub + ')') : '');
+      valEl.title = chosen.title || '';
+      wrap.classList.remove('hidden');
+    }
+
+    function refreshPendingEtaLabels() {
+      const curMs = Date.now();
+      const cells = document.querySelectorAll('#pending-tbody td[data-eta-ko]');
+      for (let i = 0; i < cells.length; i++) {
+        const td = cells[i];
+        const pbStub = {
+          ko_iso: td.getAttribute('data-eta-ko') || null,
+          est_close_iso: td.getAttribute('data-eta-close') || null,
+          est_dur_min: Number(td.getAttribute('data-eta-dur') || 0) || null,
+          awaiting_result: td.getAttribute('data-eta-await') === '1'
+        };
+        const eta = formatEstimatedClose(pbStub, curMs);
+        td.setAttribute('title', eta.title);
+        td.innerHTML = buildEtaCellInnerHtml(eta);
+      }
+      updateNextPendingEtaBanner(getFilteredPendingBets(), curMs);
+    }
+
     function renderPendingTable(list, totalStake, totalPot, pfLabel) {
       document.getElementById('pending-section-title').textContent = `Positions en Cours — ${pfLabel} (${list.length})`;
       document.getElementById('pending-total-stake').textContent = fmtEurJS(totalStake, false);
       document.getElementById('pending-total-pot').textContent = fmtEurJS(totalPot, false);
 
+      const nowMs = Date.now();
+      updateNextPendingEtaBanner(list, nowMs);
+
       const tbody = document.getElementById('pending-tbody');
       if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="p-6 text-center text-[var(--muted-foreground)] font-sans">Aucun pari en cours pour cette sélection.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="p-6 text-center text-[var(--muted-foreground)] font-sans">Aucun pari en cours pour cette sélection.</td></tr>';
         return;
       }
 
@@ -2712,6 +3076,10 @@
           : (isAwaiting
               ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/30 font-bold text-xs whitespace-nowrap" title="Match a priori terminé (coup d’envoi + 3h dépassé) — en attente de règlement/sync MyStake">⏳ RÈGLEMENT EN ATTENTE</span>'
               : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-xs whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>EN COURS</span>');
+        const eta = formatEstimatedClose(pb, nowMs);
+        const etaAttrs = pb.ko_iso && pb.est_close_iso
+          ? `data-eta-ko="${escapeHtml(pb.ko_iso)}" data-eta-close="${escapeHtml(pb.est_close_iso)}" data-eta-dur="${escapeHtml(pb.est_dur_min || '')}" data-eta-await="${isAwaiting ? '1' : '0'}"`
+          : '';
         return `
           <tr>
             <td class="p-2.5 text-[var(--muted-foreground)] whitespace-nowrap">ID #${escapeHtml(pb.id)}</td>
@@ -2726,6 +3094,7 @@
             </td>
             <td class="p-2.5 text-right font-semibold whitespace-nowrap">${fmtEurJS(pb.st, false)}</td>
             <td class="p-2.5 text-right font-bold text-emerald-400 whitespace-nowrap">${fmtEurJS(pb.pot, false)} <span class="text-xs font-normal text-[var(--muted-foreground)]">(${fmtEurJS(pb.profit_pot)})</span></td>
+            <td class="p-2.5 text-center whitespace-nowrap" title="${escapeHtml(eta.title)}" ${etaAttrs}>${buildEtaCellInnerHtml(eta)}</td>
             <td class="p-2.5 text-center whitespace-nowrap">${statusBadge}</td>
           </tr>
         `;
@@ -3008,8 +3377,8 @@
     }
 
     // Interactive Handlers
-    function setPortfolio(pf) { state.portfolio = pf; if (pf !== 'ALL') state.overlay = 'SINGLE'; updateDashboard(); }
-    function togglePortfolioCard(pf) { state.portfolio = (state.portfolio === pf) ? 'ALL' : pf; if (state.portfolio !== 'ALL') state.overlay = 'SINGLE'; updateDashboard(); }
+    function setPortfolio(pf) { state.portfolio = pf; if (pf !== 'ALL') state.overlay = 'SINGLE'; triggerKpiSwapBlur(); updateDashboard(); }
+    function togglePortfolioCard(pf) { state.portfolio = (state.portfolio === pf) ? 'ALL' : pf; if (state.portfolio !== 'ALL') state.overlay = 'SINGLE'; triggerKpiSwapBlur(); updateDashboard(); }
     function setXAxisMode(xm) { state.xAxis = xm; updateDashboard(); }
     function setChartWindow(w) { state.chartWindow = String(w); updateDashboard(); }
     function setYScale(ys) { state.yScale = String(ys); updateDashboard(); }
@@ -3031,8 +3400,8 @@
       if (state.overlay === 'COMPARE') state.overlay = 'SINGLE';
       updateDashboard();
     }
-    function setSportFilter(sp) { state.sport = sp; updateDashboard(); }
-    function toggleSportRow(sp) { state.sport = (state.sport === sp) ? 'ALL' : sp; updateDashboard(); }
+    function setSportFilter(sp) { state.sport = sp; triggerKpiSwapBlur(); updateDashboard(); }
+    function toggleSportRow(sp) { state.sport = (state.sport === sp) ? 'ALL' : sp; triggerKpiSwapBlur(); updateDashboard(); }
     function filterBets(st) { state.status = st; updateDashboard(); }
     function setSortOrder(so) { state.sort = so; updateDashboard(); }
     function onSearchChange(q) { state.search = q; updateDashboard(); }
@@ -3053,6 +3422,7 @@
       const keepAuto = state.autoRefresh;
       const keepLab = state.quantLabOpen;
       state = Object.assign({}, DEFAULT_STATE, { autoRefresh: keepAuto, quantLabOpen: keepLab });
+      triggerKpiSwapBlur();
       updateDashboard();
     }
     function toggleAutoRefresh() {
@@ -3279,6 +3649,7 @@
       clearAccessCode();
       currentSnapshotSeq = 0;
       if (initialDataRedacted) {
+        _hasHydratedLiveOnce = false;
         allBets.length = 0;
         allPending.length = 0;
         updateDashboard();
@@ -3323,6 +3694,13 @@
       const seqNum = Number(seq || 0);
       if (seqNum > 0 && currentSnapshotSeq > 0 && seqNum < currentSnapshotSeq) {
         return false;
+      }
+
+      const wasHydrated = _hasHydratedLiveOnce;
+      const prevCount = allBets.length;
+      const prevIds = {};
+      for (let k = 0; k < allBets.length; k++) {
+        prevIds[String(allBets[k].id)] = true;
       }
 
       allBets.length = 0;
@@ -3448,6 +3826,19 @@
       closeAccessGate();
       dismissRefreshBanner();
       updateDashboard();
+      _hasHydratedLiveOnce = true;
+
+      if (wasHydrated && prevCount > 0 && payload.bets.length > prevCount) {
+        const newlyAdded = [];
+        for (let m = 0; m < payload.bets.length; m++) {
+          if (!prevIds[String(payload.bets[m].id)]) {
+            newlyAdded.push(payload.bets[m]);
+          }
+        }
+        if (newlyAdded.length > 0) {
+          showLiveSettledToast(newlyAdded[newlyAdded.length - 1], newlyAdded.length, lyceeAccountBalance);
+        }
+      }
       return true;
     }
 
@@ -3886,9 +4277,10 @@
       }
     }, 15000);
 
-    // Mise à jour continue de l'âge de synchronisation (sans recharger la page)
+    // Mise à jour continue de l'âge de synchronisation et des ETA de clôture (sans recharger la page)
     setInterval(() => {
       updateFooterFreshness();
+      refreshPendingEtaLabels();
     }, 30000);
 
     // Auto-refresh 60s uniquement si explicitement activé par l'opérateur
@@ -3904,6 +4296,7 @@
       if (_resizeTimer) clearTimeout(_resizeTimer);
       _resizeTimer = setTimeout(() => {
         if (_lastTraj) renderChart(_lastTraj);
+        updatePortfolioClipOverlay();
       }, 90);
     }
 
@@ -3912,6 +4305,8 @@
       if (urlCode) saveAccessCode(urlCode);
 
       updateDashboard();
+      setTimeout(updatePortfolioClipOverlay, 60);
+      window.addEventListener('resize', updatePortfolioClipOverlay);
       const chartBox = document.getElementById('chart-box');
       if (typeof ResizeObserver !== 'undefined' && chartBox) {
         let lastW = chartBox.clientWidth;
