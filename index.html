@@ -1163,11 +1163,15 @@
         <span>PID : <strong id="footer-pid" class="text-slate-300">N/A</strong></span>
         <span aria-hidden="true">·</span>
         <span>ALIMENTATION : <strong id="footer-battery" class="text-slate-300">N/A% (Batterie)</strong></span>
+        <span id="footer-balance-wrap" class="hidden">
+          <span aria-hidden="true">·</span>
+          <span>SOLDE MYSTAKE : <strong id="footer-balance" class="text-sky-300">—</strong></span>
+        </span>
         <span aria-hidden="true">·</span>
         <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">TÉLÉMÉTRIE OS STEALTH : N/A (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-23 16:32:00</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-23 17:40:16</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
@@ -1185,7 +1189,7 @@
     let worldSub = 0.0;
     let franceSub = 0.0;
     let subDateStr = null;
-    let snapshotGeneratedIso = "2026-11-23T16:32:00";
+    let snapshotGeneratedIso = "2026-11-23T17:40:16";
     let lyceeSyncIso = "";
     let lyceeBotPid = "N/A";
     let lyceePageState = "IDLE";
@@ -1202,6 +1206,7 @@
     let lyceeTelOk = false;
     let lyceeBatPct = "N/A";
     let lyceeBatChg = "Batterie";
+    let lyceeAccountBalance = null;
     let welcomeInfo = {"total_dossiers": 0, "active_freebets_eur": 0.0, "net_team_profit": 0.0};
     let portfolioMeta = {"world": {"initial": 0.0, "gross": 0.0, "sub": 0.0, "net": 0.0, "current": 0.0, "count": 0}, "france": {"initial": 0.0, "gross": 0.0, "sub": 0.0, "net": 0.0, "current": 0.0, "count": 0}, "consolidated_patrimony": 0.0};
 
@@ -2701,9 +2706,12 @@
           ? `<span class="text-xs text-slate-300 whitespace-nowrap">#${escapeHtml(pb.ticket)}</span>`
           : '<span class="text-xs text-[var(--muted-foreground)]">—</span>';
         const isUnverified = pb.status === 'UNKNOWN_OUTCOME' || pb.status === 'PLACED_UNVERIFIED';
+        const isAwaiting = !isUnverified && Boolean(pb.awaiting_result);
         const statusBadge = isUnverified
           ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-orange-500/15 text-orange-400 border border-orange-500/30 font-bold text-xs whitespace-nowrap" title="Soumission non confirmée par ticket officiel — sera retiré à la prochaine Sync Mes Paris si absent de MyStake">⚠️ NON CONFIRMÉ</span>'
-          : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-xs whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>EN COURS</span>';
+          : (isAwaiting
+              ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/30 font-bold text-xs whitespace-nowrap" title="Match a priori terminé (coup d’envoi + 3h dépassé) — en attente de règlement/sync MyStake">⏳ RÈGLEMENT EN ATTENTE</span>'
+              : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-xs whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>EN COURS</span>');
         return `
           <tr>
             <td class="p-2.5 text-[var(--muted-foreground)] whitespace-nowrap">ID #${escapeHtml(pb.id)}</td>
@@ -3421,6 +3429,19 @@
       if (pidEl) pidEl.textContent = lyceeBotPid || 'N/A';
       const batEl = document.getElementById('footer-battery');
       if (batEl) batEl.textContent = `${lyceeBatPct}% (${lyceeBatChg})`;
+      if (ls.account_balance !== undefined) {
+        lyceeAccountBalance = ls.account_balance;
+      }
+      const balWrap = document.getElementById('footer-balance-wrap');
+      const balEl = document.getElementById('footer-balance');
+      if (balWrap && balEl) {
+        if (lyceeAccountBalance !== null && lyceeAccountBalance !== undefined && !isNaN(Number(lyceeAccountBalance))) {
+          balWrap.className = 'inline-flex items-center gap-2';
+          balEl.textContent = fmtEurJS(Number(lyceeAccountBalance), false);
+        } else {
+          balWrap.className = 'hidden';
+        }
+      }
       const syncTsEl = document.getElementById('footer-sync-ts');
       if (syncTsEl) syncTsEl.textContent = String(lyceeSyncIso || snapshotGeneratedIso).replace('T', ' ');
 
