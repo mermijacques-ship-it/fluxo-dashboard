@@ -302,6 +302,12 @@
     }
     input::placeholder { color: var(--muted-foreground); opacity: 0.85; }
     input:focus, select:focus { border-color: var(--ring); background-color: var(--card-elevated); }
+    select {
+      height: 34px;
+      padding: 0 0.62rem;
+      line-height: 32px;
+      align-self: center;
+    }
     .kpi-card {
       background-color: var(--card);
       border: 1px solid var(--border);
@@ -659,6 +665,11 @@
       input, select, .btn-refresh, .btn-ghost {
         min-height: 44px;
         font-size: 0.82rem;
+      }
+      select {
+        height: 44px;
+        padding: 0 0.72rem;
+        line-height: 42px;
       }
       .search-wrap {
         width: 100%;
@@ -1267,7 +1278,7 @@
         <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">TÉLÉMÉTRIE OS STEALTH : N/A (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-23 23:52:04</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-23 23:59:27</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
@@ -1297,7 +1308,7 @@
     let worldSub = 0.0;
     let franceSub = 0.0;
     let subDateStr = null;
-    let snapshotGeneratedIso = "2026-11-23T23:52:04";
+    let snapshotGeneratedIso = "2026-11-23T23:59:27";
     let lyceeSyncIso = "";
     let lyceeBotPid = "N/A";
     let lyceePageState = "IDLE";
@@ -4306,7 +4317,19 @@
 
       updateDashboard();
       setTimeout(updatePortfolioClipOverlay, 60);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          updatePortfolioClipOverlay();
+        });
+      }
       window.addEventListener('resize', updatePortfolioClipOverlay);
+      const pfGroupEl = document.getElementById('pf-clip-group');
+      if (typeof ResizeObserver !== 'undefined' && pfGroupEl) {
+        const pfRo = new ResizeObserver(() => {
+          updatePortfolioClipOverlay();
+        });
+        pfRo.observe(pfGroupEl);
+      }
       const chartBox = document.getElementById('chart-box');
       if (typeof ResizeObserver !== 'undefined' && chartBox) {
         let lastW = chartBox.clientWidth;
