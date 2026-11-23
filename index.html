@@ -305,7 +305,7 @@
     select {
       height: 34px;
       padding: 0 0.62rem;
-      line-height: 32px;
+      line-height: normal;
       align-self: center;
     }
     .kpi-card {
@@ -669,7 +669,7 @@
       select {
         height: 44px;
         padding: 0 0.72rem;
-        line-height: 42px;
+        line-height: normal;
       }
       .search-wrap {
         width: 100%;
@@ -1123,17 +1123,17 @@
           <table class="w-full text-left text-xs border-collapse">
             <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] sticky top-0 z-10 font-semibold border-b border-[var(--border)] uppercase tracking-wider">
               <tr>
-                <th class="p-2.5 whitespace-nowrap">ID</th>
-                <th class="p-2.5 whitespace-nowrap">Date</th>
-                <th class="p-2.5 whitespace-nowrap">Portefeuille</th>
-                <th class="p-2.5 whitespace-nowrap">Sport</th>
-                <th class="p-2.5">Match &amp; Sélection</th>
-                <th class="p-2.5 text-center whitespace-nowrap">Ticket</th>
-                <th class="p-2.5 text-right whitespace-nowrap">Vraie Cote</th>
-                <th class="p-2.5 text-right whitespace-nowrap">Vraie Mise</th>
-                <th class="p-2.5 text-right whitespace-nowrap">Retour Potentiel</th>
-                <th class="p-2.5 text-center whitespace-nowrap">Clôture est.</th>
-                <th class="p-2.5 text-center whitespace-nowrap">Statut</th>
+                <th class="px-2 py-1.5 whitespace-nowrap">ID</th>
+                <th class="px-2 py-1.5 whitespace-nowrap">Date</th>
+                <th class="px-2 py-1.5 whitespace-nowrap">Portefeuille</th>
+                <th class="px-2 py-1.5 whitespace-nowrap">Sport</th>
+                <th class="px-2 py-1.5">Match &amp; Sélection</th>
+                <th class="px-2 py-1.5 text-center whitespace-nowrap">Ticket</th>
+                <th class="px-2 py-1.5 text-right whitespace-nowrap">Cote</th>
+                <th class="px-2 py-1.5 text-right whitespace-nowrap">Mise</th>
+                <th class="px-2 py-1.5 text-right whitespace-nowrap">Retour Pot.</th>
+                <th class="px-2 py-1.5 text-center whitespace-nowrap">Clôture est.</th>
+                <th class="px-2 py-1.5 text-center whitespace-nowrap">Statut</th>
               </tr>
             </thead>
             <tbody id="pending-tbody" class="divide-y divide-[var(--border)] font-mono"></tbody>
@@ -1278,7 +1278,7 @@
         <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">TÉLÉMÉTRIE OS STEALTH : N/A (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-23 23:59:27</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-24 00:03:57</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
@@ -1308,7 +1308,7 @@
     let worldSub = 0.0;
     let franceSub = 0.0;
     let subDateStr = null;
-    let snapshotGeneratedIso = "2026-11-23T23:59:27";
+    let snapshotGeneratedIso = "2026-11-24T00:03:57";
     let lyceeSyncIso = "";
     let lyceeBotPid = "N/A";
     let lyceePageState = "IDLE";
@@ -3093,20 +3093,23 @@
           : '';
         return `
           <tr>
-            <td class="p-2.5 text-[var(--muted-foreground)] whitespace-nowrap">ID #${escapeHtml(pb.id)}</td>
-            <td class="p-2.5 text-xs text-[var(--muted-foreground)] whitespace-nowrap">${escapeHtml(fmtDateFR(pb.d))}</td>
-            <td class="p-2.5 whitespace-nowrap">${pfBadge}</td>
-            <td class="p-2.5 font-sans text-xs whitespace-nowrap">${escapeHtml(pb.s)}</td>
-            <td class="p-2.5 font-sans"><div class="font-semibold text-[var(--foreground)]">${escapeHtml(pb.m)}</div><div class="text-xs text-amber-400">${escapeHtml(pb.sel)}</div></td>
-            <td class="p-2.5 text-center whitespace-nowrap">${tBadge}</td>
-            <td class="p-2.5 text-right font-bold text-sky-400 whitespace-nowrap">
+            <td class="px-2 py-1.5 text-[var(--muted-foreground)] whitespace-nowrap">#${escapeHtml(pb.id)}</td>
+            <td class="px-2 py-1.5 text-xs text-[var(--muted-foreground)] whitespace-nowrap">${escapeHtml(fmtDateFR(pb.d))}</td>
+            <td class="px-2 py-1.5 whitespace-nowrap">${pfBadge}</td>
+            <td class="px-2 py-1.5 font-sans text-xs whitespace-nowrap">${escapeHtml(pb.s)}</td>
+            <td class="px-2 py-1.5 font-sans"><div class="font-semibold text-[var(--foreground)]">${escapeHtml(pb.m)}</div><div class="text-xs text-amber-400">${escapeHtml(pb.sel)}</div></td>
+            <td class="px-2 py-1.5 text-center whitespace-nowrap">${tBadge}</td>
+            <td class="px-2 py-1.5 text-right font-bold text-sky-400 whitespace-nowrap">
               @ ${fmtOddsJS(pb.o)}
               ${pb.fo ? `<div class="text-[10px] text-sky-300 font-mono font-normal whitespace-nowrap">Fair @ ${fmtOddsJS(pb.fo)}</div>` : ''}
             </td>
-            <td class="p-2.5 text-right font-semibold whitespace-nowrap">${fmtEurJS(pb.st, false)}</td>
-            <td class="p-2.5 text-right font-bold text-emerald-400 whitespace-nowrap">${fmtEurJS(pb.pot, false)} <span class="text-xs font-normal text-[var(--muted-foreground)]">(${fmtEurJS(pb.profit_pot)})</span></td>
-            <td class="p-2.5 text-center whitespace-nowrap" title="${escapeHtml(eta.title)}" ${etaAttrs}>${buildEtaCellInnerHtml(eta)}</td>
-            <td class="p-2.5 text-center whitespace-nowrap">${statusBadge}</td>
+            <td class="px-2 py-1.5 text-right font-semibold whitespace-nowrap">${fmtEurJS(pb.st, false)}</td>
+            <td class="px-2 py-1.5 text-right font-bold text-emerald-400 whitespace-nowrap">
+              ${fmtEurJS(pb.pot, false)}
+              <div class="text-[10px] font-normal text-[var(--muted-foreground)] whitespace-nowrap">${fmtEurJS(pb.profit_pot)}</div>
+            </td>
+            <td class="px-2 py-1.5 text-center whitespace-nowrap" title="${escapeHtml(eta.title)}" ${etaAttrs}>${buildEtaCellInnerHtml(eta)}</td>
+            <td class="px-2 py-1.5 text-center whitespace-nowrap">${statusBadge}</td>
           </tr>
         `;
       }).join('');
