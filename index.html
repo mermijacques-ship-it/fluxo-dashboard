@@ -633,6 +633,9 @@
       .svg-candle:hover {
         fill: rgba(255, 255, 255, 0.045);
       }
+      .svg-pred-candle:hover {
+        fill: rgba(255, 255, 255, 0.05);
+      }
     }
     .ctrl-btn:disabled {
       opacity: 0.42;
@@ -715,6 +718,15 @@
     .svg-candle:focus {
       outline: none;
       fill: rgba(16, 185, 129, 0.08);
+    }
+    .svg-pred-candle {
+      cursor: pointer;
+      fill: transparent;
+      transition: fill 120ms var(--ease-out);
+    }
+    .svg-pred-candle:focus {
+      outline: none;
+      fill: rgba(56, 189, 248, 0.08);
     }
     .svg-dot {
       cursor: pointer;
@@ -1425,7 +1437,7 @@
         <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">TÉLÉMÉTRIE OS STEALTH : N/A (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-24 00:43:30</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-24 12:48:02</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
@@ -1455,7 +1467,7 @@
     let worldSub = 0.0;
     let franceSub = 0.0;
     let subDateStr = null;
-    let snapshotGeneratedIso = "2026-11-24T00:43:30";
+    let snapshotGeneratedIso = "2026-11-24T12:48:02";
     let lyceeSyncIso = "";
     let lyceeBotPid = "N/A";
     let lyceePageState = "IDLE";
@@ -1781,9 +1793,17 @@
     }
 
     function computePredictions(scopePending, currentCapital) {
+      const predSortKey = (item) => (item && (item.est_close_iso || item.ko_iso || item.d)) || '';
+      const predCloseMs = (item) => {
+        if (!item) return 0;
+        const parsed = parseLocalIsoTs(item.est_close_iso || item.ko_iso || item.d);
+        return parsed ? parsed.getTime() : (new Date(String(item.d || '').replace(' ', 'T')).getTime() || 0);
+      };
       const sortedPending = scopePending.slice().sort((a, b) => {
-        if (a.d < b.d) return -1;
-        if (a.d > b.d) return 1;
+        const ka = predSortKey(a);
+        const kb = predSortKey(b);
+        if (ka < kb) return -1;
+        if (ka > kb) return 1;
         return a.id - b.id;
       });
 
@@ -1797,6 +1817,8 @@
       const ptsP50 = [];
 
       sortedPending.forEach((p, idx) => {
+        const closeIsoVal = predSortKey(p);
+        const closeTsVal = predCloseMs(p);
         const potProfit = Math.round(p.st * (p.o - 1.0) * 100) / 100;
         bestCur = Math.round((bestCur + potProfit) * 100) / 100;
         ptsBest.push({
@@ -1805,6 +1827,8 @@
           cap: bestCur,
           delta: potProfit,
           hypo: 'GAGNÉ',
+          closeIso: closeIsoVal,
+          closeTs: closeTsVal,
           ts: new Date(p.d.replace(' ', 'T')).getTime() || 0
         });
 
@@ -1816,6 +1840,8 @@
           cap: worstCur,
           delta: -loss,
           hypo: 'PERDU',
+          closeIso: closeIsoVal,
+          closeTs: closeTsVal,
           ts: new Date(p.d.replace(' ', 'T')).getTime() || 0
         });
 
@@ -1842,6 +1868,8 @@
           probPct: probPct,
           isPinnacle: isPinnacle,
           hypo: isWinMode ? `GAGNÉ (${probPct} % prob.)` : `PERDU (${100 - probPct} % prob.)`,
+          closeIso: closeIsoVal,
+          closeTs: closeTsVal,
           ts: new Date(p.d.replace(' ', 'T')).getTime() || 0
         });
       });
@@ -1890,6 +1918,8 @@
             cap: p50Val,
             delta: p50Delta,
             hypo: 'Médiane P50 Monte-Carlo (5 000 sim.)',
+            closeIso: predSortKey(sortedPending[i]),
+            closeTs: predCloseMs(sortedPending[i]),
             ts: new Date(sortedPending[i].d.replace(' ', 'T')).getTime() || 0
           });
         }
@@ -2451,6 +2481,31 @@
       return dmy;
     }
 
+    function makeCandleBucketKey(dt) {
+      return dt.getFullYear() + '-' + pad2Candle(dt.getMonth() + 1) + '-' + pad2Candle(dt.getDate()) + '_' + pad2Candle(dt.getHours());
+    }
+
+    function computeOhlcStats(prevClose, minVal, maxVal, lastVal, isEmpty) {
+      if (isEmpty) {
+        return {
+          open: prevClose,
+          high: prevClose,
+          low: prevClose,
+          close: prevClose,
+          pnl: 0
+        };
+      }
+      const o = prevClose;
+      const c = lastVal;
+      return {
+        open: o,
+        high: Math.max(o, maxVal),
+        low: Math.min(o, minVal),
+        close: c,
+        pnl: Math.round((c - o) * 100) / 100
+      };
+    }
+
     function buildCandlesFromSeries(series, startCap, tf, isCompact, getPlotEV, getPlotBest, getPlotWorst, startEV, startBest, startWorst) {
       if (!series || series.length === 0) return [];
       const bucketMap = {};
@@ -2463,7 +2518,10 @@
         const dt = parsed || fallbackDt;
         fallbackDt = dt;
         const bStart = floorCandleDate(dt, tf);
-        const bKey = bStart.getFullYear() + '-' + pad2Candle(bStart.getMonth() + 1) + '-' + pad2Candle(bStart.getDate()) + '_' + pad2Candle(bStart.getHours());
+        const bKey = makeCandleBucketKey(bStart);
+        const vEv = getPlotEV(b);
+        const vBest = getPlotBest(b);
+        const vWorst = getPlotWorst(b);
 
         if (!bucketMap[bKey]) {
           bucketMap[bKey] = {
@@ -2473,15 +2531,24 @@
             minCap: b.cap,
             maxCap: b.cap,
             lastCap: b.cap,
+            minEv: vEv,
+            maxEv: vEv,
+            lastEv: vEv,
+            minBest: vBest,
+            maxBest: vBest,
+            lastBest: vBest,
+            minWorst: vWorst,
+            maxWorst: vWorst,
+            lastWorst: vWorst,
             count: 0,
             won: 0,
             lost: 0,
             voidCnt: 0,
             staked: 0,
             hwm: b.hwm,
-            evCap: getPlotEV(b),
-            bestCap: getPlotBest(b),
-            worstCap: getPlotWorst(b),
+            evCap: vEv,
+            bestCap: vBest,
+            worstCap: vWorst,
             isEmpty: false
           };
           bucketKeys.push(bKey);
@@ -2491,15 +2558,24 @@
         if (b.cap > c.maxCap) c.maxCap = b.cap;
         if (b.cap < c.minCap) c.minCap = b.cap;
         c.lastCap = b.cap;
+        if (vEv > c.maxEv) c.maxEv = vEv;
+        if (vEv < c.minEv) c.minEv = vEv;
+        c.lastEv = vEv;
+        if (vBest > c.maxBest) c.maxBest = vBest;
+        if (vBest < c.minBest) c.minBest = vBest;
+        c.lastBest = vBest;
+        if (vWorst > c.maxWorst) c.maxWorst = vWorst;
+        if (vWorst < c.minWorst) c.minWorst = vWorst;
+        c.lastWorst = vWorst;
         c.count++;
         if (b.res === 'WON') c.won++;
         else if (b.res === 'LOST') c.lost++;
         else c.voidCnt++;
         c.staked += Number(b.st) || 0;
         c.hwm = b.hwm;
-        c.evCap = getPlotEV(b);
-        c.bestCap = getPlotBest(b);
-        c.worstCap = getPlotWorst(b);
+        c.evCap = vEv;
+        c.bestCap = vBest;
+        c.worstCap = vWorst;
       }
 
       const sortedBuckets = [];
@@ -2516,7 +2592,7 @@
         const endTs = sortedBuckets[sortedBuckets.length - 1].ts;
         let guard = 0;
         while (curDt.getTime() <= endTs && guard < 2000) {
-          const cKey = curDt.getFullYear() + '-' + pad2Candle(curDt.getMonth() + 1) + '-' + pad2Candle(curDt.getDate()) + '_' + pad2Candle(curDt.getHours());
+          const cKey = makeCandleBucketKey(curDt);
           if (bucketMap[cKey]) {
             expanded.push(bucketMap[cKey]);
           } else {
@@ -2527,6 +2603,15 @@
               minCap: 0,
               maxCap: 0,
               lastCap: 0,
+              minEv: 0,
+              maxEv: 0,
+              lastEv: 0,
+              minBest: 0,
+              maxBest: 0,
+              lastBest: 0,
+              minWorst: 0,
+              maxWorst: 0,
+              lastWorst: 0,
               count: 0,
               won: 0,
               lost: 0,
@@ -2557,27 +2642,142 @@
 
       for (let m = 0; m < finalBuckets.length; m++) {
         const item = finalBuckets[m];
+        const realStats = computeOhlcStats(prevClose, item.minCap, item.maxCap, item.lastCap, item.isEmpty);
+        const evStats = computeOhlcStats(prevEv, item.minEv, item.maxEv, item.lastEv, item.isEmpty);
+        const bestStats = computeOhlcStats(prevBest, item.minBest, item.maxBest, item.lastBest, item.isEmpty);
+        const worstStats = computeOhlcStats(prevWorst, item.minWorst, item.maxWorst, item.lastWorst, item.isEmpty);
+        item.open = realStats.open;
+        item.high = realStats.high;
+        item.low = realStats.low;
+        item.close = realStats.close;
+        item.pnl = realStats.pnl;
+        item.evOhlc = evStats;
+        item.bestOhlc = bestStats;
+        item.worstOhlc = worstStats;
         if (item.isEmpty) {
-          item.open = prevClose;
-          item.high = prevClose;
-          item.low = prevClose;
-          item.close = prevClose;
-          item.pnl = 0;
           item.hwm = prevHwm;
           item.evCap = prevEv;
           item.bestCap = prevBest;
           item.worstCap = prevWorst;
         } else {
-          item.open = prevClose;
-          item.high = Math.max(prevClose, item.maxCap);
-          item.low = Math.min(prevClose, item.minCap);
-          item.close = item.lastCap;
-          item.pnl = Math.round((item.close - item.open) * 100) / 100;
-          prevClose = item.close;
+          prevClose = realStats.close;
           prevHwm = item.hwm;
-          prevEv = item.evCap;
-          prevBest = item.bestCap;
-          prevWorst = item.worstCap;
+          prevEv = evStats.close;
+          prevBest = bestStats.close;
+          prevWorst = worstStats.close;
+        }
+        item.tickLabel = formatCandleTick(item.startDt, tf);
+        item.rangeLabel = formatCandleRange(item.startDt, tf);
+      }
+      return finalBuckets;
+    }
+
+    function buildPredictionCandles(pred, startCap, lastHistBucketDt, tf, isCompact) {
+      if (!pred || !pred.sortedPending || pred.sortedPending.length === 0) return [];
+      const minFutureDt = lastHistBucketDt
+        ? stepCandleDate(lastHistBucketDt, tf)
+        : floorCandleDate(new Date(), tf);
+      const bucketMap = {};
+      const bucketKeys = [];
+
+      for (let i = 0; i < pred.sortedPending.length; i++) {
+        const p = pred.sortedPending[i];
+        const parsed = parseLocalIsoTs(p.est_close_iso || p.ko_iso || p.d);
+        let bStart = floorCandleDate(parsed || minFutureDt, tf);
+        if (bStart.getTime() < minFutureDt.getTime()) {
+          bStart = minFutureDt;
+        }
+        const bKey = makeCandleBucketKey(bStart);
+        if (!bucketMap[bKey]) {
+          bucketMap[bKey] = {
+            key: bKey,
+            startDt: bStart,
+            ts: bStart.getTime(),
+            betIndices: [],
+            bets: [],
+            count: 0,
+            staked: 0,
+            isEmpty: false
+          };
+          bucketKeys.push(bKey);
+        }
+        const bkt = bucketMap[bKey];
+        bkt.betIndices.push(i);
+        bkt.bets.push(p);
+        bkt.count++;
+        bkt.staked += Number(p.st) || 0;
+      }
+
+      const sortedBuckets = [];
+      for (let k = 0; k < bucketKeys.length; k++) {
+        sortedBuckets.push(bucketMap[bucketKeys[k]]);
+      }
+      sortedBuckets.sort((a, b) => a.ts - b.ts);
+      if (sortedBuckets.length === 0) return [];
+
+      let finalBuckets = sortedBuckets;
+      if (!isCompact) {
+        const expanded = [];
+        let curDt = minFutureDt;
+        const endTs = sortedBuckets[sortedBuckets.length - 1].ts;
+        let guard = 0;
+        while (curDt.getTime() <= endTs && guard < 250) {
+          const cKey = makeCandleBucketKey(curDt);
+          if (bucketMap[cKey]) {
+            expanded.push(bucketMap[cKey]);
+          } else {
+            expanded.push({
+              key: cKey,
+              startDt: curDt,
+              ts: curDt.getTime(),
+              betIndices: [],
+              bets: [],
+              count: 0,
+              staked: 0,
+              isEmpty: true
+            });
+          }
+          curDt = stepCandleDate(curDt, tf);
+          guard++;
+        }
+        if (curDt.getTime() > endTs && expanded.length > 0) {
+          finalBuckets = expanded;
+        }
+      }
+
+      const prevCloseByScenario = { best: startCap, mode: startCap, p50: startCap, worst: startCap };
+      const ptsByScenario = { best: pred.ptsBest, mode: pred.ptsMode, p50: pred.ptsP50, worst: pred.ptsWorst };
+      const scenarioKeys = ['best', 'mode', 'p50', 'worst'];
+
+      for (let m = 0; m < finalBuckets.length; m++) {
+        const item = finalBuckets[m];
+        item.scenarios = {};
+        for (let si = 0; si < scenarioKeys.length; si++) {
+          const sk = scenarioKeys[si];
+          const prevC = prevCloseByScenario[sk];
+          if (item.isEmpty || item.betIndices.length === 0) {
+            item.scenarios[sk] = computeOhlcStats(prevC, prevC, prevC, prevC, true);
+          } else {
+            const sPts = ptsByScenario[sk] || [];
+            let minV = Infinity;
+            let maxV = -Infinity;
+            let lastV = prevC;
+            for (let bi = 0; bi < item.betIndices.length; bi++) {
+              const ptObj = sPts[item.betIndices[bi]];
+              if (ptObj && isFinite(ptObj.cap)) {
+                if (ptObj.cap < minV) minV = ptObj.cap;
+                if (ptObj.cap > maxV) maxV = ptObj.cap;
+                lastV = ptObj.cap;
+              }
+            }
+            if (!isFinite(minV) || !isFinite(maxV)) {
+              item.scenarios[sk] = computeOhlcStats(prevC, prevC, prevC, prevC, true);
+            } else {
+              const st = computeOhlcStats(prevC, minV, maxV, lastV, false);
+              item.scenarios[sk] = st;
+              prevCloseByScenario[sk] = st.close;
+            }
+          }
         }
         item.tickLabel = formatCandleTick(item.startDt, tf);
         item.rangeLabel = formatCandleRange(item.startDt, tf);
@@ -2844,31 +3044,46 @@
             plotStartWorst
           )
         : [];
+      const lastHistBucketDt = (isCandleMode && candles.length > 0) ? candles[candles.length - 1].startDt : null;
+      const predCandles = (isCandleMode && hasAnyPred && candles.length > 0)
+        ? buildPredictionCandles(pred, traj.finalCap, lastHistBucketDt, state.candleTf, state.candleCompact)
+        : [];
 
       let caps = isCandleMode && candles.length > 0
         ? [windowStartCap]
         : [windowStartCap].concat(displaySeries.map(s => s.cap));
       if (isCandleMode && candles.length > 0) {
         for (let ci = 0; ci < candles.length; ci++) {
-          caps.push(candles[ci].low, candles[ci].high);
+          const hc = candles[ci];
+          caps.push(hc.low, hc.high);
+          if (state.histEV && hc.evOhlc) caps.push(hc.evOhlc.low, hc.evOhlc.high);
+          if (state.histBest && hc.bestOhlc) caps.push(hc.bestOhlc.low, hc.bestOhlc.high);
+          if (state.histWorst && hc.worstOhlc) caps.push(hc.worstOhlc.low, hc.worstOhlc.high);
+        }
+        for (let pi = 0; pi < predCandles.length; pi++) {
+          const pc = predCandles[pi];
+          if (state.predBest && pc.scenarios.best) caps.push(pc.scenarios.best.low, pc.scenarios.best.high);
+          if (state.predMode && pc.scenarios.mode) caps.push(pc.scenarios.mode.low, pc.scenarios.mode.high);
+          if (state.predP50 && pc.scenarios.p50) caps.push(pc.scenarios.p50.low, pc.scenarios.p50.high);
+          if (state.predWorst && pc.scenarios.worst) caps.push(pc.scenarios.worst.low, pc.scenarios.worst.high);
         }
       }
       if (state.showHWM) {
         caps = caps.concat(displaySeries.map(s => s.hwm));
       }
-      if (state.histEV) {
+      if (!isCandleMode && state.histEV) {
         caps.push(plotStartEV);
         caps = caps.concat(displaySeries.map(getPlotEV));
       }
-      if (state.histBest) {
+      if (!isCandleMode && state.histBest) {
         caps.push(plotStartBest);
         caps = caps.concat(displaySeries.map(getPlotBest));
       }
-      if (state.histWorst) {
+      if (!isCandleMode && state.histWorst) {
         caps.push(plotStartWorst);
         caps = caps.concat(displaySeries.map(getPlotWorst));
       }
-      if (hasAnyPred) {
+      if (!isCandleMode && hasAnyPred) {
         if (state.predBest) caps = caps.concat(pred.ptsBest.map(p => p.cap));
         if (state.predMode) caps = caps.concat(pred.ptsMode.map(p => p.cap));
         if (state.predP50) caps = caps.concat(pred.ptsP50.map(p => p.cap));
@@ -2909,33 +3124,38 @@
       const activeTfBadge = isCandleMode ? (`Bougies ${tfDisplayMap[state.candleTf] || state.candleTf} · ${state.candleCompact ? 'Compressé' : 'Calendaire'}`) : (state.xAxis === 'DATE' ? 'Chronologique' : 'Par Pari');
       document.getElementById('chart-scale-badge').textContent = `${fmtAxisEurJS(dynMin, false)} à ${fmtAxisEurJS(dynMax, false)} (${scaleLabel} · ${activeTfBadge})`;
       if (summaryEl) {
-        const cExtra = isCandleMode && candles.length > 0 ? (` · ${candles.length} bougies`) : '';
+        const cPredExtra = isCandleMode && predCandles.length > 0 ? (` (+${predCandles.length} préd.)`) : '';
+        const cExtra = isCandleMode && candles.length > 0 ? (` · ${candles.length} bougies${cPredExtra}`) : '';
         summaryEl.innerHTML = `Fenêtre (${winLabel}) : <strong class="${windowDeltaCap >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${fmtEurJS(windowDeltaCap)}</strong> · ${displaySeries.length} paris${cExtra}`;
       }
 
+      const legendSwatch = (hexCol, rgbaBg) => isCandleMode
+        ? `<span class="w-2.5 h-2.5 rounded-sm inline-block" style="background:${rgbaBg};border:1.5px dashed ${hexCol};"></span>`
+        : `<span class="w-3 h-0.5 inline-block" style="border-top: 2px dashed ${hexCol};"></span>`;
+
       let histLegendHtml = '';
       if (state.histEV) {
-        histLegendHtml += `<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 inline-block" style="border-top: 2px dashed #facc15;"></span> EV (${fmtEurJS(histDeltaEV)})</span>`;
+        histLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#facc15', 'rgba(250,204,21,0.28)')} EV (${fmtEurJS(histDeltaEV)})</span>`;
       }
       if (state.histBest) {
-        histLegendHtml += `<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 inline-block" style="border-top: 1.5px dashed #34d399;"></span> Hist. Meilleur (${fmtEurJS(histDeltaBest)})</span>`;
+        histLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#34d399', 'rgba(52,211,153,0.28)')} Hist. Meilleur (${fmtEurJS(histDeltaBest)})</span>`;
       }
       if (state.histWorst) {
-        histLegendHtml += `<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 inline-block" style="border-top: 1.5px dashed #fb7185;"></span> Hist. Pire (${fmtEurJS(histDeltaWorst)})</span>`;
+        histLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#fb7185', 'rgba(251,113,133,0.28)')} Hist. Pire (${fmtEurJS(histDeltaWorst)})</span>`;
       }
 
       let predLegendHtml = '';
       if (state.predBest && scopePending.length > 0) {
-        predLegendHtml += `<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 inline-block" style="border-top: 1.5px dashed #10b981;"></span> Préd. Meilleur (${fmtEurJS(pred.bestDelta)})</span>`;
+        predLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#10b981', 'rgba(16,185,129,0.28)')} Préd. Meilleur (${fmtEurJS(pred.bestDelta)})</span>`;
       }
       if (state.predMode && scopePending.length > 0) {
-        predLegendHtml += `<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 inline-block" style="border-top: 1.5px dashed #f59e0b;"></span> Mode (${fmtEurJS(pred.modeDelta)})</span>`;
+        predLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#f59e0b', 'rgba(245,158,11,0.28)')} Mode (${fmtEurJS(pred.modeDelta)})</span>`;
       }
       if (state.predP50 && scopePending.length > 0) {
-        predLegendHtml += `<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 inline-block" style="border-top: 1.5px dashed #a855f7;"></span> P50 (${fmtEurJS(pred.p50Delta)})</span>`;
+        predLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#a855f7', 'rgba(168,85,247,0.28)')} P50 (${fmtEurJS(pred.p50Delta)})</span>`;
       }
       if (state.predWorst && scopePending.length > 0) {
-        predLegendHtml += `<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 inline-block" style="border-top: 1.5px dashed #f43f5e;"></span> Préd. Pire (${fmtEurJS(pred.worstDelta)})</span>`;
+        predLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#f43f5e', 'rgba(244,63,94,0.28)')} Préd. Pire (${fmtEurJS(pred.worstDelta)})</span>`;
       }
 
       const lineColor = state.portfolio === 'croissant_world' ? '#38bdf8' : (state.portfolio === 'croissant_france' ? '#818cf8' : '#10b981');
@@ -2966,7 +3186,8 @@
       let maxTs = displaySeries[displaySeries.length - 1].ts;
       if (hasAnyPred && state.xAxis === 'DATE') {
         pred.sortedPending.forEach((p, idx) => {
-          let ptsVal = new Date(p.d.replace(' ', 'T')).getTime() || (maxTs + (idx + 1) * 43200000);
+          const parsedP = parseLocalIsoTs(p.est_close_iso || p.ko_iso || p.d);
+          let ptsVal = parsedP ? parsedP.getTime() : (new Date(String(p.d || '').replace(' ', 'T')).getTime() || (maxTs + (idx + 1) * 43200000));
           if (ptsVal <= maxTs) ptsVal = maxTs + (idx + 1) * 43200000;
           if (ptsVal > maxTs) maxTs = ptsVal;
         });
@@ -3013,80 +3234,202 @@
 
       if (isCandleMode && candles.length > 0) {
         const M = candles.length;
-        const totalCols = M + K;
+        const P = predCandles.length;
+        const totalCols = M + P;
         const colW = plotW / (totalCols || 1);
         const bodyW = Math.max(1.4, Math.min(18, colW * 0.62));
         const wickW = colW < 4 ? 1.0 : 1.4;
-        const hitW = Math.max(4, colW);
         const getCandleX = (cIdx) => padL + ((cIdx + 0.5) / (totalCols || 1)) * plotW;
+
+        const drawOhlcBarSvg = (cx, bW, wkW, ohlc, opts) => {
+          if (!ohlc) return '';
+          const yOpen = getY(ohlc.open);
+          const yClose = getY(ohlc.close);
+          const yHigh = getY(ohlc.high);
+          const yLow = getY(ohlc.low);
+          if (opts.isEmpty) {
+            const eDash = opts.isGhost ? ' stroke-dasharray="2 1.5"' : '';
+            const eOp = opts.isGhost ? ' stroke-opacity="0.45"' : '';
+            return `<line x1="${cx - bW / 2}" y1="${yClose}" x2="${cx + bW / 2}" y2="${yClose}" stroke="${opts.emptyCol}" stroke-width="1.4" stroke-linecap="round"${eDash}${eOp} />`;
+          }
+          const bodyTop = Math.min(yOpen, yClose);
+          const bodyH = Math.max(2, Math.abs(yClose - yOpen));
+          const rxVal = bW >= 6 ? 1.5 : 0.6;
+          if (opts.isGhost) {
+            const gOp = opts.fillOpacity !== undefined ? opts.fillOpacity : 0.28;
+            return `<line x1="${cx}" y1="${yHigh}" x2="${cx}" y2="${yLow}" stroke="${opts.wickCol}" stroke-width="${wkW}" stroke-dasharray="2 1.5" stroke-opacity="0.85" stroke-linecap="round" />` +
+              `<rect x="${cx - bW / 2}" y="${bodyTop}" width="${bW}" height="${bodyH}" rx="${rxVal}" fill="${opts.fillCol}" fill-opacity="${gOp}" stroke="${opts.strokeCol}" stroke-width="1.25" stroke-dasharray="3 1.5" />`;
+          }
+          return `<line x1="${cx}" y1="${yHigh}" x2="${cx}" y2="${yLow}" stroke="${opts.wickCol}" stroke-width="${wkW}" stroke-linecap="round" />` +
+            `<rect x="${cx - bW / 2}" y="${bodyTop}" width="${bW}" height="${bodyH}" rx="${rxVal}" fill="${opts.fillCol}" />`;
+        };
 
         // X-Axis baseline & responsive date/time ticks
         svgHtml += `<line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#27272A" stroke-width="1" />`;
         const maxXTicksC = isCompact ? 4 : 8;
-        const tickCountC = Math.min(M, maxXTicksC);
+        const tickCountC = Math.min(totalCols, maxXTicksC);
         for (let tc = 0; tc < tickCountC; tc++) {
-          const cIdx = Math.min(M - 1, Math.round(tc * (M - 1) / Math.max(tickCountC - 1, 1)));
+          const cIdx = Math.min(totalCols - 1, Math.round(tc * (totalCols - 1) / Math.max(tickCountC - 1, 1)));
           const cxT = getCandleX(cIdx);
+          const tickLbl = cIdx < M ? candles[cIdx].tickLabel : predCandles[cIdx - M].tickLabel;
           svgHtml += `<line x1="${cxT}" y1="${H - padB}" x2="${cxT}" y2="${H - padB + 5}" stroke="#3F3F46" stroke-width="1" />`;
-          svgHtml += `<text x="${cxT}" y="${H - 12}" fill="#A1A1AA" font-size="${axisFontSize - 0.5}" text-anchor="middle" font-family="Fira Code, ui-monospace, monospace">${escapeHtml(candles[cIdx].tickLabel)}</text>`;
+          svgHtml += `<text x="${cxT}" y="${H - 12}" fill="#A1A1AA" font-size="${axisFontSize - 0.5}" text-anchor="middle" font-family="Fira Code, ui-monospace, monospace">${escapeHtml(tickLbl)}</text>`;
         }
 
-        // Courbes Quant Lab optionnelles superposées aux bougies
+        // High-Water Mark reste une ligne de référence en mode Bougies
         if (state.showHWM && M > 0) {
           let dH = `M ${padL} ${getY(windowStartCap)}`;
           for (let i = 0; i < M; i++) dH += ` L ${getCandleX(i)} ${getY(candles[i].hwm)}`;
           svgHtml += `<path d="${dH}" fill="none" stroke="#f59e0b" stroke-width="1.35" stroke-dasharray="3 3" stroke-opacity="0.82" />`;
         }
-        if (state.histEV && M > 0) {
-          let dE = `M ${padL} ${getY(plotStartEV)}`;
-          for (let i = 0; i < M; i++) dE += ` L ${getCandleX(i)} ${getY(candles[i].evCap)}`;
-          svgHtml += `<path d="${dE}" fill="none" stroke="#facc15" stroke-width="2.1" stroke-dasharray="4 3" stroke-linecap="round" />`;
-        }
-        if (state.histBest && M > 0) {
-          let dB = `M ${padL} ${getY(plotStartBest)}`;
-          for (let i = 0; i < M; i++) dB += ` L ${getCandleX(i)} ${getY(candles[i].bestCap)}`;
-          svgHtml += `<path d="${dB}" fill="none" stroke="#34d399" stroke-width="1.8" stroke-dasharray="3 3" stroke-linecap="round" />`;
-        }
-        if (state.histWorst && M > 0) {
-          let dW = `M ${padL} ${getY(plotStartWorst)}`;
-          for (let i = 0; i < M; i++) dW += ` L ${getCandleX(i)} ${getY(candles[i].worstCap)}`;
-          svgHtml += `<path d="${dW}" fill="none" stroke="#fb7185" stroke-width="1.8" stroke-dasharray="3 3" stroke-linecap="round" />`;
-        }
 
-        // Chandeliers OHLC (mèches + corps, sans barres de volume)
+        // Chandeliers historiques : Capital Réel + séries Quant Lab actives côte à côte
+        const histSeriesDefs = [{ key: 'real', isGhost: false }];
+        if (state.histEV) histSeriesDefs.push({ key: 'histEV', isGhost: true, fillCol: '#facc15', strokeCol: '#fde047', wickCol: '#fde047' });
+        if (state.histBest) histSeriesDefs.push({ key: 'histBest', isGhost: true, fillCol: '#34d399', strokeCol: '#6ee7b7', wickCol: '#6ee7b7' });
+        if (state.histWorst) histSeriesDefs.push({ key: 'histWorst', isGhost: true, fillCol: '#fb7185', strokeCol: '#fda4af', wickCol: '#fda4af' });
+
+        const nHist = histSeriesDefs.length;
+        const histBandW = nHist === 1 ? bodyW : Math.max(3, colW * 0.86);
+        const histSubSlotW = nHist === 1 ? colW : (histBandW / nHist);
+        const histSubBodyW = nHist === 1 ? bodyW : Math.max(1.4, Math.min(14, histSubSlotW * 0.72));
+        const histSubWickW = nHist === 1 ? wickW : (histSubSlotW < 5 ? 0.9 : 1.2);
+        const histSubHitW = Math.max(4, histSubSlotW);
+
         for (let ci = 0; ci < M; ci++) {
           const c = candles[ci];
-          const cx = getCandleX(ci);
-          const yOpen = getY(c.open);
-          const yClose = getY(c.close);
-          const yHigh = getY(c.high);
-          const yLow = getY(c.low);
-          if (c.isEmpty) {
-            svgHtml += `<line x1="${cx - bodyW / 2}" y1="${yClose}" x2="${cx + bodyW / 2}" y2="${yClose}" stroke="#3F3F46" stroke-width="1.5" stroke-linecap="round" />`;
-          } else {
-            const isBull = c.close > c.open + 1e-6;
-            const isBear = c.close < c.open - 1e-6;
-            const wickCol = isBull ? '#34D399' : (isBear ? '#FB7185' : '#A1A1AA');
-            const bodyCol = isBull ? '#10B981' : (isBear ? '#F43F5E' : '#A1A1AA');
-            const bodyTop = Math.min(yOpen, yClose);
-            const bodyH = Math.max(2, Math.abs(yClose - yOpen));
-            svgHtml += `<line x1="${cx}" y1="${yHigh}" x2="${cx}" y2="${yLow}" stroke="${wickCol}" stroke-width="${wickW}" stroke-linecap="round" />`;
-            svgHtml += `<rect x="${cx - bodyW / 2}" y="${bodyTop}" width="${bodyW}" height="${bodyH}" rx="${bodyW >= 6 ? 1.5 : 0.6}" fill="${bodyCol}" />`;
+          const colCx = getCandleX(ci);
+          for (let si = 0; si < nHist; si++) {
+            const sd = histSeriesDefs[si];
+            const subCx = nHist === 1
+              ? colCx
+              : (colCx - histBandW / 2 + (si + 0.5) * histSubSlotW);
+            let ohlcObj = c;
+            if (sd.key === 'histEV') ohlcObj = c.evOhlc;
+            else if (sd.key === 'histBest') ohlcObj = c.bestOhlc;
+            else if (sd.key === 'histWorst') ohlcObj = c.worstOhlc;
+
+            if (!sd.isGhost) {
+              const isBull = ohlcObj.close > ohlcObj.open + 1e-6;
+              const isBear = ohlcObj.close < ohlcObj.open - 1e-6;
+              svgHtml += drawOhlcBarSvg(subCx, histSubBodyW, histSubWickW, ohlcObj, {
+                isGhost: false,
+                isEmpty: c.isEmpty,
+                emptyCol: '#3F3F46',
+                wickCol: isBull ? '#34D399' : (isBear ? '#FB7185' : '#A1A1AA'),
+                fillCol: isBull ? '#10B981' : (isBear ? '#F43F5E' : '#A1A1AA')
+              });
+            } else {
+              svgHtml += drawOhlcBarSvg(subCx, histSubBodyW, histSubWickW, ohlcObj, {
+                isGhost: true,
+                isEmpty: c.isEmpty,
+                emptyCol: sd.strokeCol,
+                wickCol: sd.wickCol,
+                fillCol: sd.fillCol,
+                strokeCol: sd.strokeCol,
+                fillOpacity: 0.30
+              });
+            }
           }
         }
 
-        // Zones interactives transparentes par bougie pour infobulle OHLC
+        // Zones interactives par bougie historique
         for (let hi = 0; hi < M; hi++) {
           const c = candles[hi];
-          const cx = getCandleX(hi);
-          const hitX = Math.max(padL, cx - hitW / 2);
-          const ariaC = escapeHtml(`${c.rangeLabel} — O ${fmtEurJS(c.open, false)} · H ${fmtEurJS(c.high, false)} · L ${fmtEurJS(c.low, false)} · C ${fmtEurJS(c.close, false)} (${fmtEurJS(c.pnl)})`);
-          svgHtml += `<rect x="${hitX}" y="${padT}" width="${hitW}" height="${plotH}" tabindex="0" role="button" aria-label="${ariaC}" class="svg-candle" data-cidx="${hi}" />`;
+          const colCx = getCandleX(hi);
+          for (let si = 0; si < nHist; si++) {
+            const sd = histSeriesDefs[si];
+            const subCx = nHist === 1
+              ? colCx
+              : (colCx - histBandW / 2 + (si + 0.5) * histSubSlotW);
+            const hitX = Math.max(padL, subCx - histSubHitW / 2);
+            let ohlcObj = c;
+            let seriesLbl = 'Capital Réel';
+            if (sd.key === 'histEV') { ohlcObj = c.evOhlc; seriesLbl = 'EV Théorique'; }
+            else if (sd.key === 'histBest') { ohlcObj = c.bestOhlc; seriesLbl = 'Hist. Meilleur'; }
+            else if (sd.key === 'histWorst') { ohlcObj = c.worstOhlc; seriesLbl = 'Hist. Pire'; }
+            const ariaC = escapeHtml(`${seriesLbl} · ${c.rangeLabel} — O ${fmtEurJS(ohlcObj.open, false)} · H ${fmtEurJS(ohlcObj.high, false)} · L ${fmtEurJS(ohlcObj.low, false)} · C ${fmtEurJS(ohlcObj.close, false)} (${fmtEurJS(ohlcObj.pnl)})`);
+            svgHtml += `<rect x="${hitX}" y="${padT}" width="${histSubHitW}" height="${plotH}" tabindex="0" role="button" aria-label="${ariaC}" class="svg-candle" data-cidx="${hi}" data-series="${sd.key}" />`;
+          }
+        }
+
+        // Bougies fantômes de Prédictions côte à côte sur les créneaux futurs
+        if (P > 0) {
+          const sepX = padL + (M / (totalCols || 1)) * plotW;
+          const sepLabelX = Math.max(padL + 46, Math.min(W - padR - 54, sepX));
+          svgHtml += `<line x1="${sepX}" y1="${padT}" x2="${sepX}" y2="${H - padB}" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3 3" />`;
+          svgHtml += `<text x="${sepLabelX}" y="${padT - 8}" fill="#cbd5e1" font-size="9.5" font-family="Fira Code, ui-monospace, monospace" text-anchor="middle" font-weight="600">Aujourd'hui · Prédictions</text>`;
+
+          if (state.predBest && state.predWorst) {
+            let envD = `M ${sepX} ${getY(candles[M - 1].close)}`;
+            for (let pi = 0; pi < P; pi++) {
+              const topSc = predCandles[pi].scenarios.best;
+              if (topSc) envD += ` L ${getCandleX(M + pi)} ${getY(topSc.high)}`;
+            }
+            for (let pi = P - 1; pi >= 0; pi--) {
+              const botSc = predCandles[pi].scenarios.worst;
+              if (botSc) envD += ` L ${getCandleX(M + pi)} ${getY(botSc.low)}`;
+            }
+            envD += ' Z';
+            svgHtml += `<path d="${envD}" fill="#38bdf8" fill-opacity="0.06" />`;
+          }
+
+          const activePredDefs = [];
+          if (state.predBest) activePredDefs.push({ key: 'best', label: 'Préd. Meilleur', fillCol: '#10b981', strokeCol: '#34d399', wickCol: '#34d399' });
+          if (state.predMode) activePredDefs.push({ key: 'mode', label: 'Mode', fillCol: '#f59e0b', strokeCol: '#fbbf24', wickCol: '#fbbf24' });
+          if (state.predP50) activePredDefs.push({ key: 'p50', label: 'Médiane P50', fillCol: '#a855f7', strokeCol: '#c084fc', wickCol: '#c084fc' });
+          if (state.predWorst) activePredDefs.push({ key: 'worst', label: 'Préd. Pire', fillCol: '#f43f5e', strokeCol: '#fb7185', wickCol: '#fb7185' });
+
+          const nPred = activePredDefs.length;
+          if (nPred > 0) {
+            const predBandW = nPred === 1 ? bodyW : Math.max(3, colW * 0.86);
+            const predSubSlotW = nPred === 1 ? colW : (predBandW / nPred);
+            const predSubBodyW = nPred === 1 ? bodyW : Math.max(1.4, Math.min(14, predSubSlotW * 0.72));
+            const predSubWickW = nPred === 1 ? wickW : (predSubSlotW < 5 ? 0.9 : 1.2);
+            const predSubHitW = Math.max(4, predSubSlotW);
+
+            for (let pi = 0; pi < P; pi++) {
+              const pc = predCandles[pi];
+              const colCx = getCandleX(M + pi);
+              for (let psi = 0; psi < nPred; psi++) {
+                const ps = activePredDefs[psi];
+                const scOhlc = pc.scenarios[ps.key];
+                const subCx = nPred === 1
+                  ? colCx
+                  : (colCx - predBandW / 2 + (psi + 0.5) * predSubSlotW);
+                svgHtml += drawOhlcBarSvg(subCx, predSubBodyW, predSubWickW, scOhlc, {
+                  isGhost: true,
+                  isEmpty: pc.isEmpty,
+                  emptyCol: ps.strokeCol,
+                  wickCol: ps.wickCol,
+                  fillCol: ps.fillCol,
+                  strokeCol: ps.strokeCol,
+                  fillOpacity: 0.28
+                });
+              }
+            }
+
+            for (let pi = 0; pi < P; pi++) {
+              const pc = predCandles[pi];
+              const colCx = getCandleX(M + pi);
+              for (let psi = 0; psi < nPred; psi++) {
+                const ps = activePredDefs[psi];
+                const scOhlc = pc.scenarios[ps.key];
+                if (!scOhlc) continue;
+                const subCx = nPred === 1
+                  ? colCx
+                  : (colCx - predBandW / 2 + (psi + 0.5) * predSubSlotW);
+                const hitX = Math.max(padL, subCx - predSubHitW / 2);
+                const ariaP = escapeHtml(`${ps.label} · ${pc.rangeLabel} — O ${fmtEurJS(scOhlc.open, false)} · H ${fmtEurJS(scOhlc.high, false)} · L ${fmtEurJS(scOhlc.low, false)} · C ${fmtEurJS(scOhlc.close, false)} (${fmtEurJS(scOhlc.pnl)})`);
+                svgHtml += `<rect x="${hitX}" y="${padT}" width="${predSubHitW}" height="${plotH}" tabindex="0" role="button" aria-label="${ariaP}" class="svg-pred-candle" data-pcidx="${pi}" data-ptype="${ps.key}" />`;
+              }
+            }
+          }
         }
 
         predLastAnchorX = getCandleX(M - 1);
         predLastAnchorY = getY(candles[M - 1].close);
-        predXFn = (p, idx) => padL + ((M + idx + 0.5) / (totalCols || 1)) * plotW;
+        predXFn = null;
       } else {
         // Points construction
         const pts = [{ x: padL, y: getY(windowStartCap), cap: windowStartCap, hwm: windowStartCap, isStart: true }];
@@ -3182,7 +3525,7 @@
           }
         }
 
-        // Render settled data circles (densité adaptée sur grands volumes, tous accessibles au clavier et clic)
+        // Render settled data circles & Quant Lab historical dots (densité adaptée sur grands volumes, tous accessibles au clavier et clic)
         const dotStride = displaySeries.length > 220 ? Math.ceil(displaySeries.length / 180) : 1;
         pts.forEach((pt, pIndex) => {
           if (pt.isStart) return;
@@ -3198,13 +3541,32 @@
           svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="${r}" fill="${col}" stroke="#111114" stroke-width="1.3" tabindex="0" role="button" aria-label="${ariaLbl}" class="${dotCls}" data-idx="${pt.idx}" />`;
         });
 
+        const drawHistDots = (seriesKey, getValFn, fillCol, seriesLabel) => {
+          if (pts.length <= 1) return;
+          const histDotCls = state.showDots ? 'svg-dot hist-dot' : 'svg-dot svg-dot-hidden hist-dot';
+          const hr = isCompact ? 2.6 : 2.8;
+          displaySeries.forEach((b, idx) => {
+            const isEdge = idx === 0 || idx === displaySeries.length - 1;
+            if (!isEdge && dotStride > 1 && ((idx + 1) % dotStride !== 0)) return;
+            const hv = getValFn(b);
+            const hx = getX(idx + 1, b);
+            const hy = getY(hv);
+            const ariaH = escapeHtml(`${seriesLabel} · Pari #${b.seq} · ${b.m} — ${fmtEurJS(hv, false)}`);
+            svgHtml += `<circle cx="${hx}" cy="${hy}" r="${hr}" fill="${fillCol}" stroke="#111114" stroke-width="1.1" tabindex="0" role="button" aria-label="${ariaH}" class="${histDotCls}" data-hseries="${seriesKey}" data-idx="${idx}" />`;
+          });
+        };
+        if (state.histEV) drawHistDots('ev', getPlotEV, '#facc15', 'EV Théorique');
+        if (state.histBest) drawHistDots('best', getPlotBest, '#34d399', 'Hist. Meilleur');
+        if (state.histWorst) drawHistDots('worst', getPlotWorst, '#fb7185', 'Hist. Pire');
+
         const lastPt = pts[pts.length - 1];
         predLastAnchorX = lastPt.x;
         predLastAnchorY = lastPt.y;
         const lastBetTs = displaySeries[displaySeries.length - 1].ts;
         predXFn = (p, idx) => {
           if (state.xAxis === 'DATE') {
-            let ptsVal = new Date(p.d.replace(' ', 'T')).getTime() || (lastBetTs + (idx + 1) * 43200000);
+            const parsedP = parseLocalIsoTs(p.est_close_iso || p.ko_iso || p.d);
+            let ptsVal = parsedP ? parsedP.getTime() : (new Date(String(p.d || '').replace(' ', 'T')).getTime() || (lastBetTs + (idx + 1) * 43200000));
             if (ptsVal <= lastBetTs) ptsVal = lastBetTs + (idx + 1) * 43200000;
             return padL + 14 + ((ptsVal - minTs) / tsRange) * (plotW - 14);
           }
@@ -3212,8 +3574,8 @@
         };
       }
 
-      // Prediction Polylines and Envelope (partagés Ligne & Bougies)
-      if (hasAnyPred && predXFn) {
+      // Prediction Polylines and Envelope (mode Ligne uniquement ; en Bougies les prédictions utilisent buildPredictionCandles)
+      if (!isCandleMode && hasAnyPred && predXFn) {
         const bestCoords = [{ x: predLastAnchorX, y: predLastAnchorY, cap: traj.finalCap }];
         const modeCoords = [{ x: predLastAnchorX, y: predLastAnchorY, cap: traj.finalCap }];
         const p50Coords = [{ x: predLastAnchorX, y: predLastAnchorY, cap: traj.finalCap }];
@@ -3253,10 +3615,11 @@
         svgHtml += `<text x="${predLabelX}" y="${padT - 8}" fill="#cbd5e1" font-size="9.5" font-family="Fira Code, ui-monospace, monospace" text-anchor="middle" font-weight="600">Aujourd'hui · Prédictions</text>`;
 
         const drawPredDots = (coords, fillCol, typeKey, typeLabel) => {
+          const predDotCls = state.showDots ? 'svg-dot pred-dot' : 'svg-dot svg-dot-hidden pred-dot';
           for (let i = 1; i < coords.length; i++) {
             const pt = coords[i];
             const ariaLbl = escapeHtml(`${typeLabel} : ${pt.bet ? pt.bet.m : ''} — Capital projeté ${fmtEurJS(pt.cap, false)}`);
-            svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="4.4" fill="${fillCol}" stroke="#111114" stroke-width="1.5" tabindex="0" role="button" aria-label="${ariaLbl}" class="svg-dot pred-dot" data-type="${typeKey}" data-pidx="${pt.pIdx}" />`;
+            svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="4.4" fill="${fillCol}" stroke="#111114" stroke-width="1.5" tabindex="0" role="button" aria-label="${ariaLbl}" class="${predDotCls}" data-type="${typeKey}" data-pidx="${pt.pIdx}" />`;
           }
         };
 
@@ -3365,12 +3728,57 @@
         `;
       });
 
-      // Tooltip interactions for settled bets OR OHLC candlesticks
+      // Tooltip interactions for settled bets / historical Quant Lab OR OHLC candlesticks (+ ghost predictions)
       if (isCandleMode) {
+        const histSeriesMeta = {
+          evOhlc: { name: 'EV Théorique', dotCls: 'bg-yellow-400', badge: '<span class="text-yellow-400 font-bold whitespace-nowrap">EV OHLC</span>' },
+          bestOhlc: { name: 'Hist. Meilleur', dotCls: 'bg-emerald-400', badge: '<span class="text-emerald-400 font-bold whitespace-nowrap">THÉORIQUE</span>' },
+          worstOhlc: { name: 'Hist. Pire', dotCls: 'bg-rose-400', badge: '<span class="text-rose-400 font-bold whitespace-nowrap">THÉORIQUE</span>' }
+        };
         bindChartDotInteractions(svg, '.svg-candle', (el) => {
           const ci = parseInt(el.getAttribute('data-cidx'), 10);
+          const sKey = el.getAttribute('data-series') || 'real';
           const c = candles[ci];
           if (!c) return null;
+          if (sKey !== 'real') {
+            const ohlcField = sKey === 'histEV' ? 'evOhlc' : (sKey === 'histBest' ? 'bestOhlc' : 'worstOhlc');
+            const sOhlc = c[ohlcField];
+            const meta = histSeriesMeta[ohlcField];
+            if (!sOhlc || !meta) return null;
+            if (c.isEmpty) {
+              return `
+                <div class="font-bold border-b border-[var(--border)] pb-1 mb-1.5 flex justify-between gap-3 font-mono">
+                  <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${meta.dotCls}"></span>${meta.name}</span>
+                  <span class="text-[var(--muted-foreground)] whitespace-nowrap">VIDE</span>
+                </div>
+                <div class="text-xs text-[var(--muted-foreground)] mb-1">${escapeHtml(c.rangeLabel)}</div>
+                <div class="text-xs font-mono">Valeur maintenue : <strong class="text-[var(--foreground)]">${fmtEurJS(sOhlc.close, false)}</strong></div>
+              `;
+            }
+            const dCls = sOhlc.pnl > 0 ? 'text-emerald-400' : (sOhlc.pnl < 0 ? 'text-rose-400' : 'text-[var(--foreground)]');
+            const diffReal = Math.round((c.close - sOhlc.close) * 100) / 100;
+            const diffCls = diffReal >= 0 ? 'text-emerald-400' : 'text-rose-400';
+            return `
+              <div class="font-bold border-b border-[var(--border)] pb-1 mb-1.5 flex justify-between gap-3 font-mono">
+                <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${meta.dotCls}"></span>${meta.name} · ${escapeHtml(c.rangeLabel)}</span>
+                <span>${meta.badge}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
+                <div class="whitespace-nowrap">Open : <strong>${fmtEurJS(sOhlc.open, false)}</strong></div>
+                <div class="whitespace-nowrap text-right">High : <strong class="text-emerald-400">${fmtEurJS(sOhlc.high, false)}</strong></div>
+                <div class="whitespace-nowrap">Close : <strong>${fmtEurJS(sOhlc.close, false)}</strong></div>
+                <div class="whitespace-nowrap text-right">Low : <strong class="text-rose-400">${fmtEurJS(sOhlc.low, false)}</strong></div>
+              </div>
+              <div class="text-xs pt-1.5 mt-1.5 border-t border-[var(--border)] font-mono flex justify-between gap-3">
+                <span class="whitespace-nowrap">Delta période : <strong class="${dCls}">${fmtEurJS(sOhlc.pnl)}</strong></span>
+                <span class="text-[var(--muted-foreground)] whitespace-nowrap">${c.count} paris</span>
+              </div>
+              <div class="text-[11px] text-[var(--muted-foreground)] font-mono flex justify-between gap-3 mt-0.5">
+                <span class="whitespace-nowrap">Réel clôture : <strong>${fmtEurJS(c.close, false)}</strong></span>
+                <span class="whitespace-nowrap">Écart vs Réel : <strong class="${diffCls}">${fmtEurJS(diffReal)}</strong></span>
+              </div>
+            `;
+          }
           if (c.isEmpty) {
             return `
               <div class="font-bold border-b border-[var(--border)] pb-1 mb-1.5 flex justify-between gap-3 font-mono">
@@ -3408,7 +3816,93 @@
             </div>
           `;
         });
+
+        if (predCandles.length > 0) {
+          const predScenarioMeta = {
+            best: { label: 'Prédiction · Meilleur Cas', dotCls: 'bg-emerald-400', badge: '<span class="text-emerald-400 font-bold whitespace-nowrap">PRÉDICTION OHLC</span>' },
+            mode: { label: 'Prédiction · Plus Probable', dotCls: 'bg-amber-400', badge: '<span class="text-amber-400 font-bold whitespace-nowrap">PRÉDICTION OHLC</span>' },
+            p50: { label: 'Prédiction · Médiane P50', dotCls: 'bg-purple-400', badge: '<span class="text-purple-400 font-bold whitespace-nowrap">MONTE-CARLO</span>' },
+            worst: { label: 'Prédiction · Pire Scénario', dotCls: 'bg-rose-400', badge: '<span class="text-rose-400 font-bold whitespace-nowrap">PRÉDICTION OHLC</span>' }
+          };
+          bindChartDotInteractions(svg, '.svg-pred-candle', (el) => {
+            const pi = parseInt(el.getAttribute('data-pcidx'), 10);
+            const pType = el.getAttribute('data-ptype');
+            const pc = predCandles[pi];
+            if (!pc || !pc.scenarios || !pc.scenarios[pType]) return null;
+            const sc = pc.scenarios[pType];
+            const meta = predScenarioMeta[pType];
+            if (!meta) return null;
+            if (pc.isEmpty) {
+              return `
+                <div class="font-bold border-b border-[var(--border)] pb-1 mb-1.5 flex justify-between gap-3 font-mono">
+                  <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${meta.dotCls}"></span>${meta.label}</span>
+                  <span class="text-[var(--muted-foreground)] whitespace-nowrap">VIDE</span>
+                </div>
+                <div class="text-xs text-[var(--muted-foreground)] mb-1">${escapeHtml(pc.rangeLabel)}</div>
+                <div class="text-xs font-mono">Aucune clôture estimée sur ce créneau · Capital projeté : <strong class="text-[var(--foreground)]">${fmtEurJS(sc.close, false)}</strong></div>
+              `;
+            }
+            const dCls = sc.pnl > 0 ? 'text-emerald-400' : (sc.pnl < 0 ? 'text-rose-400' : 'text-[var(--foreground)]');
+            const previewList = pc.bets.slice(0, 3).map((pb) => {
+              const eta = formatEstimatedClose(pb);
+              return `<div class="text-[11px] text-[var(--muted-foreground)] truncate">• ${escapeHtml(pb.m)} <span class="font-mono text-sky-400">(${escapeHtml(eta.primary)})</span></div>`;
+            }).join('');
+            const moreCount = pc.bets.length > 3 ? `<div class="text-[11px] text-[var(--muted-foreground)] italic">+ ${pc.bets.length - 3} autre(s) pari(s)</div>` : '';
+            return `
+              <div class="font-bold border-b border-[var(--border)] pb-1 mb-1.5 flex justify-between gap-3 font-mono">
+                <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ${meta.dotCls}"></span>${meta.label}</span>
+                <span>${meta.badge}</span>
+              </div>
+              <div class="text-xs text-[var(--muted-foreground)] font-mono mb-1.5">${escapeHtml(pc.rangeLabel)}</div>
+              <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
+                <div class="whitespace-nowrap">Open : <strong>${fmtEurJS(sc.open, false)}</strong></div>
+                <div class="whitespace-nowrap text-right">High : <strong class="text-emerald-400">${fmtEurJS(sc.high, false)}</strong></div>
+                <div class="whitespace-nowrap">Close : <strong>${fmtEurJS(sc.close, false)}</strong></div>
+                <div class="whitespace-nowrap text-right">Low : <strong class="text-rose-400">${fmtEurJS(sc.low, false)}</strong></div>
+              </div>
+              <div class="text-xs pt-1.5 mt-1.5 border-t border-[var(--border)] font-mono flex justify-between gap-3">
+                <span class="whitespace-nowrap">Delta projeté : <strong class="${dCls}">${fmtEurJS(sc.pnl)}</strong></span>
+                <span class="text-[var(--muted-foreground)] whitespace-nowrap">${pc.count} pari(s) · Misé ${fmtEurJS(pc.staked, false)}</span>
+              </div>
+              <div class="pt-1.5 mt-1.5 border-t border-[var(--border)] space-y-0.5">${previewList}${moreCount}</div>
+            `;
+          });
+        }
       } else {
+        bindChartDotInteractions(svg, '.hist-dot', (dot) => {
+          const idx = parseInt(dot.getAttribute('data-idx'), 10);
+          const hType = dot.getAttribute('data-hseries');
+          const b = displaySeries[idx];
+          if (!b) return null;
+          let title = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>EV Théorique</span>';
+          let val = getPlotEV(b);
+          let desc = 'Trajectoire espérée cumulée sur la base des probabilités Pinnacle / Fair.';
+          if (hType === 'best') {
+            title = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Historique : Meilleur Cas</span>';
+            val = getPlotBest(b);
+            desc = 'Enveloppe haute théorique : somme des gains potentiels de chaque pari réglé.';
+          } else if (hType === 'worst') {
+            title = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Historique : Pire Scénario</span>';
+            val = getPlotWorst(b);
+            desc = 'Enveloppe basse théorique : perte cumulée si tous les paris réglés avaient perdu.';
+          }
+          const diffReal = Math.round((b.cap - val) * 100) / 100;
+          const diffCls = diffReal >= 0 ? 'text-emerald-400' : 'text-rose-400';
+          return `
+            <div class="font-bold border-b border-[var(--border)] pb-1 mb-1.5 flex justify-between gap-3 font-mono">
+              <span>${title}</span>
+              <span class="text-[var(--muted-foreground)] whitespace-nowrap">#${escapeHtml(b.seq)}</span>
+            </div>
+            <div class="text-[var(--foreground)] font-semibold mb-0.5">${escapeHtml(b.m)}</div>
+            <div class="text-xs text-[var(--muted-foreground)] mb-1.5">${escapeHtml(b.bk)} · ${escapeHtml(fmtDateFR(b.d))}</div>
+            <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[var(--border)] font-mono">
+              <div class="whitespace-nowrap">Courbe : <strong>${fmtEurJS(val, false)}</strong></div>
+              <div class="whitespace-nowrap text-right">Réel : <strong>${fmtEurJS(b.cap, false)}</strong></div>
+              <div class="col-span-2 whitespace-nowrap">Écart Réel vs Courbe : <strong class="${diffCls}">${fmtEurJS(diffReal)}</strong></div>
+            </div>
+            <div class="text-[11px] pt-1.5 mt-1 border-t border-[var(--border)] text-[var(--muted-foreground)] font-sans leading-snug">${desc}</div>
+          `;
+        });
         bindChartDotInteractions(svg, '.settled-dot', (dot) => {
         const idx = parseInt(dot.getAttribute('data-idx'), 10);
         const b = displaySeries[idx];
