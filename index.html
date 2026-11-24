@@ -469,6 +469,12 @@
       border-color: rgba(244, 63, 94, 0.48) !important;
       font-weight: 600;
     }
+    .ctrl-btn.active-hist-mode {
+      background-color: rgba(249, 115, 22, 0.16) !important;
+      color: #fb923c !important;
+      border-color: rgba(249, 115, 22, 0.48) !important;
+      font-weight: 600;
+    }
     .btn-refresh {
       padding: 0.42rem 0.82rem;
       min-height: 34px;
@@ -1196,6 +1202,10 @@
                   <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span>
                   <span id="label-hist-best">Meilleur Cas</span>
                 </button>
+                <button onclick="toggleHistory('mode')" id="btn-hist-mode" class="ctrl-btn" aria-pressed="false">
+                  <span class="w-2 h-2 rounded-full bg-orange-400 inline-block shrink-0"></span>
+                  <span id="label-hist-mode">Plus Probable</span>
+                </button>
                 <button onclick="toggleHistory('worst')" id="btn-hist-worst" class="ctrl-btn" aria-pressed="false">
                   <span class="w-2 h-2 rounded-full bg-rose-400 inline-block shrink-0"></span>
                   <span id="label-hist-worst">Pire Cas</span>
@@ -1437,7 +1447,7 @@
         <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">TÉLÉMÉTRIE OS STEALTH : N/A (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-24 12:48:02</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-24 13:03:23</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
@@ -1467,7 +1477,7 @@
     let worldSub = 0.0;
     let franceSub = 0.0;
     let subDateStr = null;
-    let snapshotGeneratedIso = "2026-11-24T12:48:02";
+    let snapshotGeneratedIso = "2026-11-24T13:03:23";
     let lyceeSyncIso = "";
     let lyceeBotPid = "N/A";
     let lyceePageState = "IDLE";
@@ -1501,6 +1511,7 @@
       showHWM: false,
       histEV: false,
       histBest: false,
+      histMode: false,
       histWorst: false,
       predBest: false,
       predMode: false,
@@ -1701,6 +1712,33 @@
       });
     }
 
+    function computeModeOutcome(b) {
+      let prob = 0.5;
+      let isPinnacle = false;
+      if (b && b.fo && b.fo > 1.0) {
+        prob = 1.0 / b.fo;
+        isPinnacle = true;
+      } else if (b && b.o && b.o > 1.0) {
+        prob = 1.0 / (b.o * 0.95);
+      }
+      prob = Math.max(0.05, Math.min(0.95, prob));
+      const probPct = Math.round(prob * 100);
+      const isWin = prob >= 0.50;
+      const st = Number(b && b.st) || 0;
+      const o = Number(b && b.o) || 1.0;
+      const potProfit = Math.round(st * (o - 1.0) * 100) / 100;
+      const loss = Math.round(st * 100) / 100;
+      return {
+        prob: prob,
+        probPct: probPct,
+        isPinnacle: isPinnacle,
+        isWin: isWin,
+        potProfit: potProfit,
+        loss: loss,
+        delta: isWin ? potProfit : -loss
+      };
+    }
+
     function computeDynamicTrajectory(scopeBets) {
       const startCap = getActiveBaseCap();
       const subFee = getActiveSubAmount();
@@ -1713,6 +1751,7 @@
 
       let evCur = startCap;
       let bestCur = startCap;
+      let modeCur = startCap;
       let worstCur = startCap;
 
       const series = [];
@@ -1724,6 +1763,7 @@
           cur -= subFee;
           evCur -= subFee;
           bestCur -= subFee;
+          modeCur -= subFee;
           worstCur -= subFee;
           subIdx = seqNum - 0.5;
         }
@@ -1751,6 +1791,10 @@
         const betBest = Math.round((b.st * (b.o - 1.0)) * 100) / 100;
         bestCur = Math.round((bestCur + betBest) * 100) / 100;
 
+        // Trajectoire Scénario le Plus Probable historique (Mode discret Pinnacle >= 50%)
+        const mOut = computeModeOutcome(b);
+        modeCur = Math.round((modeCur + mOut.delta) * 100) / 100;
+
         // Trajectoire Pire cas historique (All LOST)
         const betWorst = Math.round((-b.st) * 100) / 100;
         worstCur = Math.round((worstCur + betWorst) * 100) / 100;
@@ -1764,6 +1808,11 @@
           evEstimated: evEstimated,
           evCap: evCur,
           bestCap: bestCur,
+          betMode: mOut.delta,
+          modeIsWin: mOut.isWin,
+          modeProbPct: mOut.probPct,
+          modeIsPinnacle: mOut.isPinnacle,
+          modeCap: modeCur,
           worstCap: worstCur,
           ts: new Date(b.d.replace(' ', 'T')).getTime() || (i * 3600000)
         }));
@@ -1774,6 +1823,7 @@
         cur = Math.round((cur - subFee) * 100) / 100;
         evCur = Math.round((evCur - subFee) * 100) / 100;
         bestCur = Math.round((bestCur - subFee) * 100) / 100;
+        modeCur = Math.round((modeCur - subFee) * 100) / 100;
         worstCur = Math.round((worstCur - subFee) * 100) / 100;
         subIdx = scopeBets.length + 0.5;
       }
@@ -1784,6 +1834,7 @@
         finalCap: cur,
         finalEVCap: evCur,
         finalBestCap: bestCur,
+        finalModeCap: modeCur,
         finalWorstCap: worstCur,
         maxDD: maxDD,
         subIdx: subIdx,
@@ -1845,19 +1896,11 @@
           ts: new Date(p.d.replace(' ', 'T')).getTime() || 0
         });
 
-        let prob = 0.5;
-        let isPinnacle = false;
-        if (p.fo && p.fo > 1.0) {
-          prob = 1.0 / p.fo;
-          isPinnacle = true;
-        } else if (p.o && p.o > 1.0) {
-          prob = 1.0 / (p.o * 0.95);
-        }
-        prob = Math.max(0.05, Math.min(0.95, prob));
-        const probPct = Math.round(prob * 100);
-
-        const isWinMode = prob >= 0.50;
-        const modeDelta = isWinMode ? potProfit : -loss;
+        const mOut = computeModeOutcome(p);
+        const isWinMode = mOut.isWin;
+        const modeDelta = mOut.delta;
+        const probPct = mOut.probPct;
+        const isPinnacle = mOut.isPinnacle;
         modeCur = Math.round((modeCur + modeDelta) * 100) / 100;
         ptsMode.push({
           step: idx + 1,
@@ -1961,6 +2004,7 @@
         state.showHWM ||
         state.histEV ||
         state.histBest ||
+        state.histMode ||
         state.histWorst ||
         state.predBest ||
         state.predMode ||
@@ -2042,6 +2086,7 @@
         (state.showHWM ? 1 : 0) +
         (state.histEV ? 1 : 0) +
         (state.histBest ? 1 : 0) +
+        (state.histMode ? 1 : 0) +
         (state.histWorst ? 1 : 0) +
         (state.predBest ? 1 : 0) +
         (state.predMode ? 1 : 0) +
@@ -2154,6 +2199,7 @@
       let windowStartCap = traj.startCap;
       let windowStartEVCap = traj.startCap;
       let windowStartBestCap = traj.startCap;
+      let windowStartModeCap = traj.startCap;
       let windowStartWorstCap = traj.startCap;
 
       if (state.chartWindow !== 'ALL' && rawSeries.length > 0) {
@@ -2164,6 +2210,7 @@
           windowStartCap = prevItem.cap;
           windowStartEVCap = prevItem.evCap;
           windowStartBestCap = prevItem.bestCap;
+          windowStartModeCap = prevItem.modeCap;
           windowStartWorstCap = prevItem.worstCap;
         }
       }
@@ -2173,6 +2220,9 @@
         : 0;
       const histDeltaBest = displaySeries.length > 0
         ? Math.round((displaySeries[displaySeries.length - 1].bestCap - windowStartBestCap) * 100) / 100
+        : 0;
+      const histDeltaMode = displaySeries.length > 0
+        ? Math.round((displaySeries[displaySeries.length - 1].modeCap - windowStartModeCap) * 100) / 100
         : 0;
       const histDeltaWorst = displaySeries.length > 0
         ? Math.round((displaySeries[displaySeries.length - 1].worstCap - windowStartWorstCap) * 100) / 100
@@ -2191,6 +2241,13 @@
         btnHistBest.setAttribute('aria-pressed', state.histBest ? 'true' : 'false');
         const lblHistBest = document.getElementById('label-hist-best');
         if (lblHistBest) lblHistBest.textContent = `Meilleur Cas (${fmtEurJS(histDeltaBest)})`;
+      }
+      const btnHistMode = document.getElementById('btn-hist-mode');
+      if (btnHistMode) {
+        btnHistMode.className = 'ctrl-btn' + (state.histMode ? ' active-hist-mode' : '');
+        btnHistMode.setAttribute('aria-pressed', state.histMode ? 'true' : 'false');
+        const lblHistMode = document.getElementById('label-hist-mode');
+        if (lblHistMode) lblHistMode.textContent = `Plus Probable (${fmtEurJS(histDeltaMode)})`;
       }
       const btnHistWorst = document.getElementById('btn-hist-worst');
       if (btnHistWorst) {
@@ -2506,8 +2563,10 @@
       };
     }
 
-    function buildCandlesFromSeries(series, startCap, tf, isCompact, getPlotEV, getPlotBest, getPlotWorst, startEV, startBest, startWorst) {
+    function buildCandlesFromSeries(series, startCap, tf, isCompact, getPlotEV, getPlotBest, getPlotWorst, startEV, startBest, startWorst, getPlotMode, startMode) {
       if (!series || series.length === 0) return [];
+      const _getPlotMode = getPlotMode || ((b) => b.modeCap !== undefined ? b.modeCap : b.cap);
+      const _startMode = startMode !== undefined ? startMode : startCap;
       const bucketMap = {};
       const bucketKeys = [];
       let fallbackDt = new Date();
@@ -2521,6 +2580,7 @@
         const bKey = makeCandleBucketKey(bStart);
         const vEv = getPlotEV(b);
         const vBest = getPlotBest(b);
+        const vMode = _getPlotMode(b);
         const vWorst = getPlotWorst(b);
 
         if (!bucketMap[bKey]) {
@@ -2537,6 +2597,9 @@
             minBest: vBest,
             maxBest: vBest,
             lastBest: vBest,
+            minMode: vMode,
+            maxMode: vMode,
+            lastMode: vMode,
             minWorst: vWorst,
             maxWorst: vWorst,
             lastWorst: vWorst,
@@ -2548,6 +2611,7 @@
             hwm: b.hwm,
             evCap: vEv,
             bestCap: vBest,
+            modeCap: vMode,
             worstCap: vWorst,
             isEmpty: false
           };
@@ -2564,6 +2628,9 @@
         if (vBest > c.maxBest) c.maxBest = vBest;
         if (vBest < c.minBest) c.minBest = vBest;
         c.lastBest = vBest;
+        if (vMode > c.maxMode) c.maxMode = vMode;
+        if (vMode < c.minMode) c.minMode = vMode;
+        c.lastMode = vMode;
         if (vWorst > c.maxWorst) c.maxWorst = vWorst;
         if (vWorst < c.minWorst) c.minWorst = vWorst;
         c.lastWorst = vWorst;
@@ -2575,6 +2642,7 @@
         c.hwm = b.hwm;
         c.evCap = vEv;
         c.bestCap = vBest;
+        c.modeCap = vMode;
         c.worstCap = vWorst;
       }
 
@@ -2609,6 +2677,9 @@
               minBest: 0,
               maxBest: 0,
               lastBest: 0,
+              minMode: 0,
+              maxMode: 0,
+              lastMode: 0,
               minWorst: 0,
               maxWorst: 0,
               lastWorst: 0,
@@ -2620,6 +2691,7 @@
               hwm: 0,
               evCap: 0,
               bestCap: 0,
+              modeCap: 0,
               worstCap: 0,
               isEmpty: true
             });
@@ -2638,6 +2710,7 @@
       let prevHwm = startCap;
       let prevEv = startEV;
       let prevBest = startBest;
+      let prevMode = _startMode;
       let prevWorst = startWorst;
 
       for (let m = 0; m < finalBuckets.length; m++) {
@@ -2645,6 +2718,7 @@
         const realStats = computeOhlcStats(prevClose, item.minCap, item.maxCap, item.lastCap, item.isEmpty);
         const evStats = computeOhlcStats(prevEv, item.minEv, item.maxEv, item.lastEv, item.isEmpty);
         const bestStats = computeOhlcStats(prevBest, item.minBest, item.maxBest, item.lastBest, item.isEmpty);
+        const modeStats = computeOhlcStats(prevMode, item.minMode, item.maxMode, item.lastMode, item.isEmpty);
         const worstStats = computeOhlcStats(prevWorst, item.minWorst, item.maxWorst, item.lastWorst, item.isEmpty);
         item.open = realStats.open;
         item.high = realStats.high;
@@ -2653,17 +2727,20 @@
         item.pnl = realStats.pnl;
         item.evOhlc = evStats;
         item.bestOhlc = bestStats;
+        item.modeOhlc = modeStats;
         item.worstOhlc = worstStats;
         if (item.isEmpty) {
           item.hwm = prevHwm;
           item.evCap = prevEv;
           item.bestCap = prevBest;
+          item.modeCap = prevMode;
           item.worstCap = prevWorst;
         } else {
           prevClose = realStats.close;
           prevHwm = item.hwm;
           prevEv = evStats.close;
           prevBest = bestStats.close;
+          prevMode = modeStats.close;
           prevWorst = worstStats.close;
         }
         item.tickLabel = formatCandleTick(item.startDt, tf);
@@ -2969,6 +3046,7 @@
       let windowStartCap = traj.startCap;
       let windowStartEVCap = traj.startCap;
       let windowStartBestCap = traj.startCap;
+      let windowStartModeCap = traj.startCap;
       let windowStartWorstCap = traj.startCap;
       const isZoomed = state.chartWindow !== 'ALL' && rawSeries.length > parseInt(state.chartWindow, 10);
 
@@ -2979,6 +3057,7 @@
         windowStartCap = prevItem.cap;
         windowStartEVCap = prevItem.evCap;
         windowStartBestCap = prevItem.bestCap;
+        windowStartModeCap = prevItem.modeCap;
         windowStartWorstCap = prevItem.worstCap;
       }
 
@@ -3017,13 +3096,16 @@
       // En mode Zoom, on recale les courbes historiques sur windowStartCap pour comparer la période zoomée proprement
       const getPlotEV = (b) => isZoomed ? (windowStartCap + (b.evCap - windowStartEVCap)) : b.evCap;
       const getPlotBest = (b) => isZoomed ? (windowStartCap + (b.bestCap - windowStartBestCap)) : b.bestCap;
+      const getPlotMode = (b) => isZoomed ? (windowStartCap + (b.modeCap - windowStartModeCap)) : b.modeCap;
       const getPlotWorst = (b) => isZoomed ? (windowStartCap + (b.worstCap - windowStartWorstCap)) : b.worstCap;
       const plotStartEV = isZoomed ? windowStartCap : windowStartEVCap;
       const plotStartBest = isZoomed ? windowStartCap : windowStartBestCap;
+      const plotStartMode = isZoomed ? windowStartCap : windowStartModeCap;
       const plotStartWorst = isZoomed ? windowStartCap : windowStartWorstCap;
 
       const histDeltaEV = Math.round((displaySeries[displaySeries.length - 1].evCap - windowStartEVCap) * 100) / 100;
       const histDeltaBest = Math.round((displaySeries[displaySeries.length - 1].bestCap - windowStartBestCap) * 100) / 100;
+      const histDeltaMode = Math.round((displaySeries[displaySeries.length - 1].modeCap - windowStartModeCap) * 100) / 100;
       const histDeltaWorst = Math.round((displaySeries[displaySeries.length - 1].worstCap - windowStartWorstCap) * 100) / 100;
       const windowDeltaCap = Math.round((displaySeries[displaySeries.length - 1].cap - windowStartCap) * 100) / 100;
 
@@ -3041,7 +3123,9 @@
             getPlotWorst,
             plotStartEV,
             plotStartBest,
-            plotStartWorst
+            plotStartWorst,
+            getPlotMode,
+            plotStartMode
           )
         : [];
       const lastHistBucketDt = (isCandleMode && candles.length > 0) ? candles[candles.length - 1].startDt : null;
@@ -3058,6 +3142,7 @@
           caps.push(hc.low, hc.high);
           if (state.histEV && hc.evOhlc) caps.push(hc.evOhlc.low, hc.evOhlc.high);
           if (state.histBest && hc.bestOhlc) caps.push(hc.bestOhlc.low, hc.bestOhlc.high);
+          if (state.histMode && hc.modeOhlc) caps.push(hc.modeOhlc.low, hc.modeOhlc.high);
           if (state.histWorst && hc.worstOhlc) caps.push(hc.worstOhlc.low, hc.worstOhlc.high);
         }
         for (let pi = 0; pi < predCandles.length; pi++) {
@@ -3078,6 +3163,10 @@
       if (!isCandleMode && state.histBest) {
         caps.push(plotStartBest);
         caps = caps.concat(displaySeries.map(getPlotBest));
+      }
+      if (!isCandleMode && state.histMode) {
+        caps.push(plotStartMode);
+        caps = caps.concat(displaySeries.map(getPlotMode));
       }
       if (!isCandleMode && state.histWorst) {
         caps.push(plotStartWorst);
@@ -3139,6 +3228,9 @@
       }
       if (state.histBest) {
         histLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#34d399', 'rgba(52,211,153,0.28)')} Hist. Meilleur (${fmtEurJS(histDeltaBest)})</span>`;
+      }
+      if (state.histMode) {
+        histLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#fb923c', 'rgba(251,146,60,0.28)')} Hist. Plus Probable (${fmtEurJS(histDeltaMode)})</span>`;
       }
       if (state.histWorst) {
         histLegendHtml += `<span class="flex items-center gap-1.5">${legendSwatch('#fb7185', 'rgba(251,113,133,0.28)')} Hist. Pire (${fmtEurJS(histDeltaWorst)})</span>`;
@@ -3287,6 +3379,7 @@
         const histSeriesDefs = [{ key: 'real', isGhost: false }];
         if (state.histEV) histSeriesDefs.push({ key: 'histEV', isGhost: true, fillCol: '#facc15', strokeCol: '#fde047', wickCol: '#fde047' });
         if (state.histBest) histSeriesDefs.push({ key: 'histBest', isGhost: true, fillCol: '#34d399', strokeCol: '#6ee7b7', wickCol: '#6ee7b7' });
+        if (state.histMode) histSeriesDefs.push({ key: 'histMode', isGhost: true, fillCol: '#fb923c', strokeCol: '#fdba74', wickCol: '#fdba74' });
         if (state.histWorst) histSeriesDefs.push({ key: 'histWorst', isGhost: true, fillCol: '#fb7185', strokeCol: '#fda4af', wickCol: '#fda4af' });
 
         const nHist = histSeriesDefs.length;
@@ -3307,6 +3400,7 @@
             let ohlcObj = c;
             if (sd.key === 'histEV') ohlcObj = c.evOhlc;
             else if (sd.key === 'histBest') ohlcObj = c.bestOhlc;
+            else if (sd.key === 'histMode') ohlcObj = c.modeOhlc;
             else if (sd.key === 'histWorst') ohlcObj = c.worstOhlc;
 
             if (!sd.isGhost) {
@@ -3347,6 +3441,7 @@
             let seriesLbl = 'Capital Réel';
             if (sd.key === 'histEV') { ohlcObj = c.evOhlc; seriesLbl = 'EV Théorique'; }
             else if (sd.key === 'histBest') { ohlcObj = c.bestOhlc; seriesLbl = 'Hist. Meilleur'; }
+            else if (sd.key === 'histMode') { ohlcObj = c.modeOhlc; seriesLbl = 'Hist. Plus Probable'; }
             else if (sd.key === 'histWorst') { ohlcObj = c.worstOhlc; seriesLbl = 'Hist. Pire'; }
             const ariaC = escapeHtml(`${seriesLbl} · ${c.rangeLabel} — O ${fmtEurJS(ohlcObj.open, false)} · H ${fmtEurJS(ohlcObj.high, false)} · L ${fmtEurJS(ohlcObj.low, false)} · C ${fmtEurJS(ohlcObj.close, false)} (${fmtEurJS(ohlcObj.pnl)})`);
             svgHtml += `<rect x="${hitX}" y="${padT}" width="${histSubHitW}" height="${plotH}" tabindex="0" role="button" aria-label="${ariaC}" class="svg-candle" data-cidx="${hi}" data-series="${sd.key}" />`;
@@ -3494,6 +3589,14 @@
           svgHtml += `<path d="${dBest}" fill="none" stroke="#34d399" stroke-width="1.8" stroke-dasharray="3 3" stroke-linecap="round" />`;
         }
 
+        if (state.histMode && pts.length > 1) {
+          let dMode = `M ${padL} ${getY(plotStartMode)}`;
+          displaySeries.forEach((b, idx) => {
+            dMode += ` L ${getX(idx + 1, b)} ${getY(getPlotMode(b))}`;
+          });
+          svgHtml += `<path d="${dMode}" fill="none" stroke="#fb923c" stroke-width="2.0" stroke-dasharray="4 3" stroke-linecap="round" />`;
+        }
+
         if (state.histWorst && pts.length > 1) {
           let dWorst = `M ${padL} ${getY(plotStartWorst)}`;
           displaySeries.forEach((b, idx) => {
@@ -3557,6 +3660,7 @@
         };
         if (state.histEV) drawHistDots('ev', getPlotEV, '#facc15', 'EV Théorique');
         if (state.histBest) drawHistDots('best', getPlotBest, '#34d399', 'Hist. Meilleur');
+        if (state.histMode) drawHistDots('mode', getPlotMode, '#fb923c', 'Hist. Plus Probable');
         if (state.histWorst) drawHistDots('worst', getPlotWorst, '#fb7185', 'Hist. Pire');
 
         const lastPt = pts[pts.length - 1];
@@ -3733,6 +3837,7 @@
         const histSeriesMeta = {
           evOhlc: { name: 'EV Théorique', dotCls: 'bg-yellow-400', badge: '<span class="text-yellow-400 font-bold whitespace-nowrap">EV OHLC</span>' },
           bestOhlc: { name: 'Hist. Meilleur', dotCls: 'bg-emerald-400', badge: '<span class="text-emerald-400 font-bold whitespace-nowrap">THÉORIQUE</span>' },
+          modeOhlc: { name: 'Hist. Plus Probable', dotCls: 'bg-orange-400', badge: '<span class="text-orange-400 font-bold whitespace-nowrap">MODE OHLC</span>' },
           worstOhlc: { name: 'Hist. Pire', dotCls: 'bg-rose-400', badge: '<span class="text-rose-400 font-bold whitespace-nowrap">THÉORIQUE</span>' }
         };
         bindChartDotInteractions(svg, '.svg-candle', (el) => {
@@ -3741,7 +3846,7 @@
           const c = candles[ci];
           if (!c) return null;
           if (sKey !== 'real') {
-            const ohlcField = sKey === 'histEV' ? 'evOhlc' : (sKey === 'histBest' ? 'bestOhlc' : 'worstOhlc');
+            const ohlcField = sKey === 'histEV' ? 'evOhlc' : (sKey === 'histBest' ? 'bestOhlc' : (sKey === 'histMode' ? 'modeOhlc' : 'worstOhlc'));
             const sOhlc = c[ohlcField];
             const meta = histSeriesMeta[ohlcField];
             if (!sOhlc || !meta) return null;
@@ -3881,6 +3986,12 @@
             title = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Historique : Meilleur Cas</span>';
             val = getPlotBest(b);
             desc = 'Enveloppe haute théorique : somme des gains potentiels de chaque pari réglé.';
+          } else if (hType === 'mode') {
+            title = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-400"></span>Historique : Plus Probable</span>';
+            val = getPlotMode(b);
+            const srcMode = b.modeIsPinnacle ? `Pinnacle (${b.modeProbPct} %)` : `Estimé (${b.modeProbPct || 50} %)`;
+            const outcomeLbl = b.modeIsWin ? 'GAGNÉ' : 'PERDU';
+            desc = `Scénario discret majoritaire (${srcMode}) : pari attendu ${outcomeLbl} (${fmtEurJS(b.betMode)}).`;
           } else if (hType === 'worst') {
             title = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Historique : Pire Scénario</span>';
             val = getPlotWorst(b);
@@ -3929,11 +4040,12 @@
             <span class="whitespace-nowrap">${evDeltaFromReal >= 0 ? 'Sur-perf.' : 'Sous-perf.'}</span>
           </div>
         `;
-        if (state.histBest || state.histWorst) {
+        if (state.histBest || state.histMode || state.histWorst) {
           histDetails += `
-            <div class="text-[11px] text-[var(--muted-foreground)] font-mono flex justify-between gap-2 pt-0.5">
-              <span class="whitespace-nowrap">Best : <strong class="text-emerald-400">${fmtEurJS(getPlotBest(b), false)}</strong></span>
-              <span class="whitespace-nowrap">Worst : <strong class="text-rose-400">${fmtEurJS(getPlotWorst(b), false)}</strong></span>
+            <div class="text-[11px] text-[var(--muted-foreground)] font-mono flex flex-wrap justify-between gap-2 pt-0.5">
+              ${state.histBest ? `<span class="whitespace-nowrap">Best : <strong class="text-emerald-400">${fmtEurJS(getPlotBest(b), false)}</strong></span>` : ''}
+              ${state.histMode ? `<span class="whitespace-nowrap">Mode : <strong class="text-orange-400">${fmtEurJS(getPlotMode(b), false)}</strong></span>` : ''}
+              ${state.histWorst ? `<span class="whitespace-nowrap">Worst : <strong class="text-rose-400">${fmtEurJS(getPlotWorst(b), false)}</strong></span>` : ''}
             </div>
           `;
         }
@@ -4526,6 +4638,7 @@
     function toggleHistory(type) {
       if (type === 'ev') state.histEV = !state.histEV;
       if (type === 'best') state.histBest = !state.histBest;
+      if (type === 'mode') state.histMode = !state.histMode;
       if (type === 'worst') state.histWorst = !state.histWorst;
       if (state.overlay === 'COMPARE') state.overlay = 'SINGLE';
       updateDashboard();
