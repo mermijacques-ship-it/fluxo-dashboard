@@ -278,6 +278,29 @@
     .border-collapse { border-collapse: collapse; }
     .divide-y > * + * { border-top: 1px solid var(--border); }
     tbody tr { transition: background-color 140ms var(--ease-out); }
+    tbody tr:focus-visible, .sport-row-clickable:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: -2px;
+    }
+    h1, h2 { text-wrap: balance; }
+    p { text-wrap: pretty; }
+    .fluxo-kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      border-radius: 4px;
+      border: 1px solid var(--border-strong);
+      background-color: var(--muted);
+      color: var(--muted-foreground);
+      font-family: "Fira Code", ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1;
+      pointer-events: none;
+    }
     a { color: inherit; text-decoration: none; }
     button { cursor: pointer; border: none; font-family: inherit; background: transparent; color: inherit; }
     button:disabled { opacity: 0.55; cursor: wait; }
@@ -291,11 +314,11 @@
       background-color: var(--muted);
       color: var(--foreground);
       border: 1px solid var(--border-strong);
-      border-radius: 0.45rem;
-      padding: 0.34rem 0.62rem;
+      border-radius: 8px;
+      padding: 6px 10px;
       font-size: 0.75rem !important;
       line-height: 1.2;
-      min-height: 34px;
+      min-height: 36px;
       outline: none;
       caret-color: var(--ring);
       transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out);
@@ -303,30 +326,30 @@
     input::placeholder { color: var(--muted-foreground); opacity: 0.85; }
     input:focus, select:focus { border-color: var(--ring); background-color: var(--card-elevated); }
     select {
-      height: 34px;
-      padding: 0 0.62rem;
+      height: 36px;
+      padding: 0 10px;
       line-height: normal;
       align-self: center;
     }
     .kpi-card {
       background-color: var(--card);
       border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      padding: 1rem 1.1rem;
+      border-radius: 12px;
+      padding: 16px 20px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
       transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out);
     }
     .kpi-card-primary {
       background: linear-gradient(180deg, #16161B 0%, #111114 100%);
       border-color: rgba(255, 255, 255, 0.11);
-      padding: 1.15rem 1.25rem;
+      padding: 20px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
     .kpi-card-compact {
       background-color: var(--card);
       border: 1px solid var(--border);
-      border-radius: 0.65rem;
-      padding: 0.78rem 1rem;
+      border-radius: 10px;
+      padding: 12px 16px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
     .kpi-display {
@@ -341,8 +364,8 @@
     .passive-summary-card {
       background-color: rgba(20, 20, 24, 0.65);
       border: 1px dashed rgba(255, 255, 255, 0.14);
-      border-radius: 0.75rem;
-      padding: 1rem;
+      border-radius: 12px;
+      padding: 16px;
     }
     .ctrl-group {
       display: inline-flex;
@@ -350,15 +373,16 @@
       align-items: center;
       max-width: 100%;
       background-color: var(--muted);
-      padding: 0.2rem;
-      border-radius: 0.5rem;
+      padding: 4px;
+      min-height: 36px;
+      border-radius: 10px;
       border: 1px solid var(--border);
-      gap: 0.2rem;
+      gap: 4px;
     }
     .ctrl-btn {
-      padding: 0.36rem 0.66rem;
-      min-height: 30px;
-      border-radius: 0.375rem;
+      padding: 6px 10px;
+      min-height: 28px;
+      border-radius: 6px;
       border: 1px solid transparent;
       font-size: 0.75rem;
       font-weight: 500;
@@ -366,7 +390,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.35rem;
+      gap: 6px;
       transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 160ms var(--ease-out);
       white-space: nowrap;
       max-width: 100%;
@@ -391,14 +415,14 @@
     }
     .pf-clip-overlay {
       position: absolute;
-      inset: 0.2rem;
+      inset: 4px;
       display: inline-flex;
       align-items: center;
-      gap: 0.2rem;
+      gap: 4px;
       pointer-events: none;
       background-color: #FAFAFA;
-      border-radius: 0.375rem;
-      clip-path: inset(0px 100% 0px 0px round 0.375rem);
+      border-radius: 6px;
+      clip-path: inset(0px 100% 0px 0px round 6px);
       transition: clip-path 260ms var(--ease-in-out);
       opacity: 0;
     }
@@ -406,10 +430,10 @@
       opacity: 1;
     }
     .pf-clip-clone {
-      padding: 0.36rem 0.66rem;
-      min-height: 30px;
+      padding: 6px 10px;
+      min-height: 28px;
       border: 1px solid transparent;
-      border-radius: 0.375rem;
+      border-radius: 6px;
       font-size: 0.75rem;
       font-weight: 600;
       color: #09090B;
@@ -476,9 +500,9 @@
       font-weight: 600;
     }
     .btn-refresh {
-      padding: 0.42rem 0.82rem;
-      min-height: 34px;
-      border-radius: 0.5rem;
+      padding: 6px 12px;
+      min-height: 36px;
+      border-radius: 8px;
       border: 1px solid var(--border-strong);
       background-color: var(--card);
       color: var(--foreground);
@@ -487,14 +511,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.42rem;
+      gap: 6px;
       white-space: nowrap;
       transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 160ms var(--ease-out);
     }
     .btn-ghost {
-      padding: 0.38rem 0.72rem;
-      min-height: 34px;
-      border-radius: 0.48rem;
+      padding: 6px 10px;
+      min-height: 36px;
+      border-radius: 8px;
       border: 1px solid var(--border);
       background-color: var(--muted);
       color: var(--muted-foreground);
@@ -503,7 +527,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.35rem;
+      gap: 6px;
       white-space: nowrap;
       transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out), transform 160ms var(--ease-out);
     }
@@ -522,14 +546,14 @@
     }
     .search-wrap input {
       width: 100%;
-      padding-right: 2rem;
+      padding-right: 32px;
     }
     .search-clear {
       position: absolute;
-      right: 0.35rem;
-      width: 1.45rem;
-      height: 1.45rem;
-      border-radius: 0.35rem;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -538,12 +562,16 @@
       line-height: 1;
       transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out);
     }
+    .search-wrap .fluxo-kbd {
+      position: absolute;
+      right: 8px;
+    }
     .tooltip-card {
       background-color: var(--card-elevated);
       border: 1px solid var(--border-strong);
       color: var(--foreground);
-      border-radius: 0.65rem;
-      padding: 0.75rem 0.85rem;
+      border-radius: 10px;
+      padding: 12px;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
       min-width: 245px;
       max-width: calc(100% - 16px);
@@ -552,8 +580,8 @@
     .quant-lab-panel {
       background-color: rgba(20, 20, 24, 0.85);
       border: 1px solid var(--border);
-      border-radius: 0.65rem;
-      padding: 0.85rem;
+      border-radius: 10px;
+      padding: 12px 16px;
     }
     .sport-row-clickable {
       cursor: pointer;
@@ -590,10 +618,13 @@
     .portfolio-card.selected-pf {
       border-color: rgba(16, 185, 129, 0.55);
       background-color: var(--card-elevated);
-      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.22);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
-    .ctrl-btn:active, .btn-refresh:active, .btn-ghost:active, .portfolio-card:active {
-      transform: scale(0.97);
+    .ctrl-btn:active, .btn-refresh:active, .btn-ghost:active {
+      transform: scale(0.96);
+    }
+    .portfolio-card:active {
+      transform: scale(0.985);
     }
     @media (hover: hover) and (pointer: fine) {
       a:hover { text-decoration: underline; }
@@ -664,13 +695,13 @@
     }
     .chart-style-dropdown {
       position: absolute;
-      top: calc(100% + 0.35rem);
+      top: calc(100% + 6px);
       left: 0;
       min-width: 12.75rem;
       background-color: var(--card-elevated);
       border: 1px solid var(--border-strong);
-      border-radius: 0.65rem;
-      padding: 0.35rem;
+      border-radius: 12px;
+      padding: 6px;
       box-shadow: 0 18px 42px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.06);
       z-index: 45;
       transform-origin: top left;
@@ -685,30 +716,29 @@
       pointer-events: auto;
     }
     .chart-menu-hdr {
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
       color: var(--muted-foreground);
-      padding: 0.32rem 0.55rem 0.22rem;
+      padding: 4px 8px;
     }
     .chart-menu-sep {
       height: 1px;
       background-color: var(--border);
-      margin: 0.28rem 0.2rem;
+      margin: 4px;
     }
     .chart-menu-item {
       width: 100%;
       text-align: left;
-      padding: 0.38rem 0.55rem;
-      border-radius: 0.4rem;
+      padding: 6px 8px;
+      border-radius: 6px;
       font-size: 0.75rem;
       font-weight: 500;
       color: var(--muted-foreground);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: 8px;
       transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out);
     }
     .chart-menu-item.selected {
@@ -753,15 +783,15 @@
     }
     .fluxo-live-toast {
       position: fixed;
-      right: 1.25rem;
-      bottom: 1.25rem;
+      right: 20px;
+      bottom: 20px;
       z-index: 55;
       max-width: min(23rem, calc(100vw - 2rem));
       background-color: var(--card-elevated);
       color: var(--foreground);
       border: 1px solid var(--border-strong);
-      border-radius: 0.75rem;
-      padding: 0.78rem 0.92rem;
+      border-radius: 12px;
+      padding: 12px 16px;
       box-shadow: 0 18px 42px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
       transform: translateY(130%);
       opacity: 0;
@@ -839,8 +869,8 @@
       max-width: 24rem;
       background: var(--card);
       border: 1px solid var(--border-strong);
-      border-radius: 0.9rem;
-      padding: 1.5rem;
+      border-radius: 16px;
+      padding: 24px;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
     }
   </style>
@@ -870,7 +900,7 @@
 
     <!-- Top Institutional Header Bar -->
     <header class="border-b border-[var(--border)] pb-4 space-y-3">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2.5">
             <span class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-[var(--muted)] border border-[var(--border)] font-mono text-xs font-semibold tracking-wider text-[var(--foreground)]">
@@ -890,7 +920,7 @@
         </div>
 
         <!-- Global Scope Selector (Portefeuille + Sport + Réinitialisation + Actualisation) -->
-        <div class="flex flex-wrap items-center gap-1.5 shrink-0 min-w-0 max-w-full">
+        <div class="flex flex-wrap items-center gap-2 shrink-0 min-w-0 max-w-full">
           <div id="pf-clip-group" class="ctrl-group pf-clip-tabs" role="group" aria-label="Sélecteur de portefeuille">
             <button onclick="setPortfolio('ALL')" id="pf-ALL" class="ctrl-btn active" aria-pressed="true">Global</button>
             <button onclick="setPortfolio('croissant_world')" id="pf-croissant_world" class="ctrl-btn" aria-pressed="false">World</button>
@@ -911,7 +941,7 @@
           </select>
 
           <button id="btn-reset-filters" onclick="resetAllFilters()" class="btn-ghost hidden" title="Revenir à la vue globale par défaut">
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
             <span>Réinitialiser</span>
           </button>
 
@@ -924,8 +954,9 @@
           </button>
 
           <button id="btn-refresh" onclick="triggerSmoothDashboardRefresh(true)" title="Actualiser les données en direct (raccourci R)" class="btn-refresh" aria-busy="false">
-            <svg id="refresh-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0 text-sky-400"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            <svg id="refresh-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0 text-[var(--muted-foreground)]"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
             <span id="refresh-label">Actualiser</span>
+            <kbd class="fluxo-kbd">R</kbd>
           </button>
         </div>
       </div>
@@ -937,17 +968,17 @@
     <main class="space-y-5">
 
       <!-- Tier 1 : 3 Métriques Prioritaires du Coup d'Œil Matinal (Capital Net · PnL Brut · Paris en Cours) -->
-      <section aria-label="Indicateurs principaux" class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+      <section aria-label="Indicateurs principaux" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- 1. Capital Net Actuel (Focal Dominant) -->
         <div class="kpi-card kpi-card-primary">
           <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-            <span class="text-xs text-[var(--muted-foreground)] font-semibold uppercase tracking-wider inline-flex items-center gap-1.5">
+            <span class="text-xs text-[var(--muted-foreground)] font-medium inline-flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span>
               <span id="kpi-cap-label">Capital Net · Global</span>
             </span>
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-init-label">Base 0,00 €</span>
           </div>
-          <div class="text-3xl font-bold text-emerald-400 mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-final-cap">0,00 €</div>
+          <div class="text-3xl font-semibold text-emerald-400 mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-final-cap">0,00 €</div>
           <div class="text-xs mt-1.5 flex flex-wrap items-center gap-2 font-mono">
             <span class="text-emerald-400 font-semibold whitespace-nowrap" id="kpi-net-pnl">+0,00 € net</span>
             <span class="text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-roi">(+0,0 % ROI)</span>
@@ -957,13 +988,13 @@
         <!-- 2. PnL Brut -->
         <div class="kpi-card kpi-card-primary">
           <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-            <span class="text-xs text-[var(--muted-foreground)] font-semibold uppercase tracking-wider inline-flex items-center gap-1.5">
+            <span class="text-xs text-[var(--muted-foreground)] font-medium inline-flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-sky-400 inline-block shrink-0"></span>
               <span>PnL Brut</span>
             </span>
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-staked-vol-top">Volume 0,00 €</span>
           </div>
-          <div class="text-3xl font-bold text-[var(--foreground)] mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-gross-pnl">+0,00 €</div>
+          <div class="text-3xl font-semibold text-[var(--foreground)] mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-gross-pnl">+0,00 €</div>
           <div class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono" id="kpi-gross-sub">
             Avant frais d'abonnement · 0W / 0L / 0V
           </div>
@@ -972,13 +1003,13 @@
         <!-- 3. Nombre de Paris en Cours & Exposition -->
         <div class="kpi-card kpi-card-primary">
           <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-            <span class="text-xs text-[var(--muted-foreground)] font-semibold uppercase tracking-wider inline-flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block shrink-0"></span>
+            <span class="text-xs text-[var(--muted-foreground)] font-medium inline-flex items-center gap-1.5">
+              <span id="kpi-pending-dot" class="w-2 h-2 rounded-full bg-amber-400  inline-block shrink-0"></span>
               <span>Paris en Cours</span>
             </span>
             <a href="#section-pending" class="text-xs font-mono text-sky-400 whitespace-nowrap">Voir le détail ↓</a>
           </div>
-          <div class="text-3xl font-bold text-amber-400 mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-pending-count">0 paris</div>
+          <div class="text-3xl font-semibold text-amber-400 mt-2 font-mono whitespace-nowrap kpi-display" id="kpi-pending-count">0 paris</div>
           <div class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono flex flex-wrap items-center gap-x-2 gap-y-0.5" id="kpi-exposure-sub">
             <span class="whitespace-nowrap">Engagé : 0,00 €</span>
             <span aria-hidden="true">·</span>
@@ -992,11 +1023,11 @@
         <!-- Taux de Réussite -->
         <div class="kpi-card-compact">
           <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-            <span class="text-xs text-[var(--muted-foreground)] font-medium uppercase tracking-wider">Taux de Réussite</span>
+            <span class="text-xs text-[var(--muted-foreground)] font-medium">Taux de Réussite</span>
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-avg-odds">Cote moy. -</span>
           </div>
           <div class="flex flex-wrap items-baseline justify-between gap-2 mt-1">
-            <div class="text-xl font-bold text-sky-400 font-mono whitespace-nowrap kpi-display" id="kpi-winrate">0,0 %</div>
+            <div class="text-xl font-semibold text-sky-400 font-mono whitespace-nowrap kpi-display" id="kpi-winrate">0,0 %</div>
             <div class="text-xs text-[var(--muted-foreground)] font-mono whitespace-nowrap" id="kpi-wlv-breakdown">
               0W / 0L / 0V (0)
             </div>
@@ -1006,11 +1037,11 @@
         <!-- Rendement (Yield) & Drawdown -->
         <div class="kpi-card-compact">
           <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-            <span class="text-xs text-[var(--muted-foreground)] font-medium uppercase tracking-wider">Rendement (Yield)</span>
+            <span class="text-xs text-[var(--muted-foreground)] font-medium">Rendement (Yield)</span>
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-max-dd">Max DD -0,00 €</span>
           </div>
           <div class="flex flex-wrap items-baseline justify-between gap-2 mt-1">
-            <div class="text-xl font-bold text-emerald-400 font-mono whitespace-nowrap kpi-display" id="kpi-yield">+0,0 %</div>
+            <div class="text-xl font-semibold text-emerald-400 font-mono whitespace-nowrap kpi-display" id="kpi-yield">+0,0 %</div>
             <div class="text-xs text-[var(--muted-foreground)] font-mono whitespace-nowrap" id="kpi-staked-vol">
               Tranché : 0,00 €
             </div>
@@ -1020,11 +1051,11 @@
         <!-- Closing Line Value (CLV) -->
         <div class="kpi-card-compact">
           <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-            <span class="text-xs text-[var(--muted-foreground)] font-medium uppercase tracking-wider">Closing Line Value (CLV)</span>
+            <span class="text-xs text-[var(--muted-foreground)] font-medium">Closing Line Value (CLV)</span>
             <span class="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap" id="kpi-clv-w">Pond. +0,0 %</span>
           </div>
           <div class="flex flex-wrap items-baseline justify-between gap-2 mt-1">
-            <div class="text-xl font-bold text-amber-400 font-mono whitespace-nowrap kpi-display" id="kpi-clv-avg">+0,0 %</div>
+            <div class="text-xl font-semibold text-amber-400 font-mono whitespace-nowrap kpi-display" id="kpi-clv-avg">+0,0 %</div>
             <div class="text-xs text-emerald-400 font-mono whitespace-nowrap" id="kpi-clv-beat">
               0/0 (0,0 %) &gt; clôture
             </div>
@@ -1037,7 +1068,7 @@
         <div onclick="togglePortfolioCard('croissant_world')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();togglePortfolioCard('croissant_world');}" role="button" tabindex="0" aria-pressed="false" id="card-pf-croissant_world" class="portfolio-card bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="shrink-0 whitespace-nowrap text-xs font-mono font-bold px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">croissant_world</span>
+              <span class="shrink-0 whitespace-nowrap text-xs font-mono font-medium px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">croissant_world</span>
               <span id="card-world-title" class="font-semibold text-sm text-[var(--foreground)] leading-snug">MyStake & Lollybet · Croissant World (0)</span>
             </div>
             <p id="card-world-meta" class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono">
@@ -1045,7 +1076,7 @@
             </p>
           </div>
           <div class="shrink-0 whitespace-nowrap sm:text-right font-mono">
-            <div id="card-world-cap" class="text-lg font-bold text-sky-400">0,00 €</div>
+            <div id="card-world-cap" class="text-lg font-semibold text-sky-400">0,00 €</div>
             <div id="card-world-net" class="text-xs text-emerald-400 font-medium">+0,00 € net</div>
           </div>
         </div>
@@ -1053,7 +1084,7 @@
         <div onclick="togglePortfolioCard('croissant_france')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();togglePortfolioCard('croissant_france');}" role="button" tabindex="0" aria-pressed="false" id="card-pf-croissant_france" class="portfolio-card bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="shrink-0 whitespace-nowrap text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">croissant_france</span>
+              <span class="shrink-0 whitespace-nowrap text-xs font-mono font-medium px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">croissant_france</span>
               <span id="card-france-title" class="font-semibold text-sm text-[var(--foreground)] leading-snug">PMU Sport · Croissant France (0)</span>
             </div>
             <p id="card-france-meta" class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono">
@@ -1061,7 +1092,7 @@
             </p>
           </div>
           <div class="shrink-0 whitespace-nowrap sm:text-right font-mono">
-            <div id="card-france-cap" class="text-lg font-bold text-indigo-400">0,00 €</div>
+            <div id="card-france-cap" class="text-lg font-semibold text-indigo-400">0,00 €</div>
             <div id="card-france-net" class="text-xs text-emerald-400 font-medium">+0,00 € net</div>
           </div>
         </div>
@@ -1070,7 +1101,7 @@
         <div class="passive-summary-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="shrink-0 whitespace-nowrap text-xs font-mono font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">INFO · BONUS</span>
+              <span class="shrink-0 whitespace-nowrap text-xs font-mono font-medium px-2 py-0.5 rounded bg-[var(--muted)] text-[var(--muted-foreground)] border border-[var(--border)]">Offres &amp; Bonus</span>
               <span id="card-welcome-title" class="font-semibold text-sm text-[var(--foreground)] leading-snug">Offres &amp; Parrainages (0)</span>
             </div>
             <p id="card-welcome-meta" class="text-xs text-[var(--muted-foreground)] mt-1.5 font-mono">
@@ -1078,7 +1109,7 @@
             </p>
           </div>
           <div class="shrink-0 whitespace-nowrap sm:text-right font-mono">
-            <div id="card-welcome-profit" class="text-lg font-bold text-purple-400">+0,00 €</div>
+            <div id="card-welcome-profit" class="text-lg font-semibold text-slate-300">+0,00 €</div>
             <div class="text-xs text-[var(--muted-foreground)]">Hors Valuebets</div>
           </div>
         </div>
@@ -1086,7 +1117,7 @@
 
       <!-- Section Graphique Interactif & Tiroir Quant Lab -->
       <section aria-label="Courbe d'évolution du capital" class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 space-y-4">
-        <div class="space-y-3 border-b border-[var(--border)] pb-3.5">
+        <div class="space-y-3 border-b border-[var(--border)] pb-4">
           <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
             <div class="min-w-0">
               <h2 class="text-base font-semibold text-[var(--foreground)] leading-snug" id="chart-title">Courbe d'Évolution du Capital</h2>
@@ -1140,7 +1171,7 @@
                 <span id="chart-style-label">Points</span>
               </button>
               <button id="btn-chart-style-menu" onclick="toggleChartStyleMenu(event)" class="btn-ghost active chart-split-caret" aria-haspopup="menu" aria-expanded="false" aria-controls="chart-style-dropdown" title="Changer de style : Courbe ou Bougies (1h, 4h, 1j, 1 sem)">
-                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 shrink-0"><path d="m6 9 6 6 6-6"/></svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 shrink-0"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <div id="chart-style-dropdown" class="chart-style-dropdown" role="menu" aria-label="Style de tracé et granularité des bougies">
                 <div class="chart-menu-hdr font-mono">Courbe</div>
@@ -1179,7 +1210,7 @@
 
             <!-- 6. Tiroir Repliable Quant Lab (HWM · Courbes EV · Prédictions Monte-Carlo) -->
             <button id="btn-quant-lab" onclick="toggleQuantLab()" class="btn-ghost" aria-expanded="false" aria-controls="quant-lab-panel">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0 text-sky-400"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
               <span>Quant Lab</span>
               <span id="quant-lab-count" class="hidden px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono text-[11px] font-semibold">0</span>
             </button>
@@ -1188,7 +1219,7 @@
           <!-- Panneau Quant Lab (divulgation progressive : HWM, Historique EV/Best/Worst & Prédictions P50/Mode) -->
           <div id="quant-lab-panel" class="quant-lab-panel hidden space-y-2.5">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs text-[var(--muted-foreground)] font-mono uppercase tracking-wider">Repères &amp; Historique :</span>
+              <span class="text-xs text-[var(--muted-foreground)] font-medium">Repères &amp; Historique :</span>
               <div class="ctrl-group" role="group" aria-label="Repères et courbes théoriques historiques">
                 <button onclick="toggleHWM()" id="btn-hwm" class="ctrl-btn" aria-pressed="false">
                   <span class="w-2 h-2 rounded-full bg-amber-400 inline-block shrink-0"></span>
@@ -1214,7 +1245,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs text-[var(--muted-foreground)] font-mono uppercase tracking-wider">Scénarios En Cours :</span>
+              <span class="text-xs text-[var(--muted-foreground)] font-medium">Scénarios en cours :</span>
               <div class="ctrl-group" role="group" aria-label="Scénarios de projection des paris en cours">
                 <button onclick="togglePrediction('best')" id="btn-pred-best" class="ctrl-btn" aria-pressed="false">
                   <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span>
@@ -1272,7 +1303,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+              <span id="pending-section-dot" class="w-2 h-2 rounded-full bg-amber-400  shrink-0"></span>
               <h2 class="text-base font-semibold text-[var(--foreground)]" id="pending-section-title" aria-live="polite">
                 Positions en Cours — Global (0)
               </h2>
@@ -1290,7 +1321,7 @@
         </div>
         <div class="table-scroll-wrap overflow-x-auto max-h-96 rounded-lg border border-[var(--border)]">
           <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] sticky top-0 z-10 font-semibold border-b border-[var(--border)] uppercase tracking-wider">
+            <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] sticky top-0 z-10 font-medium border-b border-[var(--border)]">
               <tr>
                 <th class="px-2 py-1.5 whitespace-nowrap">ID</th>
                 <th class="px-2 py-1.5 whitespace-nowrap">Date</th>
@@ -1323,7 +1354,7 @@
           </div>
           <div class="table-scroll-wrap overflow-x-auto rounded-lg border border-[var(--border)]">
             <table class="w-full text-left text-xs border-collapse">
-              <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] font-semibold border-b border-[var(--border)] uppercase tracking-wider">
+              <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] font-medium border-b border-[var(--border)]">
                 <tr>
                   <th class="p-2.5 whitespace-nowrap">Sport</th>
                   <th class="p-2.5 text-center whitespace-nowrap">Bilan</th>
@@ -1349,7 +1380,7 @@
           </div>
           <div class="table-scroll-wrap overflow-x-auto rounded-lg border border-[var(--border)]">
             <table class="w-full text-left text-xs border-collapse">
-              <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] font-semibold border-b border-[var(--border)] uppercase tracking-wider">
+              <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] font-medium border-b border-[var(--border)]">
                 <tr>
                   <th class="p-2.5 whitespace-nowrap">Plage de Cotes</th>
                   <th class="p-2.5 text-center whitespace-nowrap">Bilan</th>
@@ -1376,7 +1407,8 @@
           <div class="flex flex-wrap items-center gap-2">
             <!-- Recherche texte avec bouton Effacer -->
             <div class="search-wrap">
-              <input type="text" id="history-search" oninput="onSearchChange(this.value)" placeholder="Équipe, sélection, #ticket… (/)" aria-label="Rechercher un pari" />
+              <input type="text" id="history-search" oninput="onSearchChange(this.value)" placeholder="Équipe, sélection, #ticket" aria-label="Rechercher un pari" />
+              <kbd id="search-kbd-hint" class="fluxo-kbd">/</kbd>
               <button type="button" id="btn-clear-search" onclick="clearSearch()" class="search-clear hidden" aria-label="Effacer la recherche" title="Effacer (Échap)">×</button>
             </div>
 
@@ -1400,7 +1432,7 @@
 
             <!-- Export CSV -->
             <button type="button" id="btn-export-csv" onclick="exportFilteredCsv()" class="btn-ghost" title="Télécharger la vue filtrée au format CSV">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 shrink-0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
               <span>CSV</span>
             </button>
           </div>
@@ -1408,7 +1440,7 @@
 
         <div class="table-scroll-wrap overflow-x-auto max-h-96 rounded-lg border border-[var(--border)]">
           <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] sticky top-0 z-10 font-semibold border-b border-[var(--border)] uppercase tracking-wider">
+            <thead class="bg-[var(--muted)] text-[var(--muted-foreground)] sticky top-0 z-10 font-medium border-b border-[var(--border)]">
               <tr>
                 <th class="p-2.5 whitespace-nowrap">#</th>
                 <th class="p-2.5 whitespace-nowrap">Date</th>
@@ -1432,7 +1464,7 @@
     </main>
 
     <!-- Infrastructure & Telemetry Footer Bar (Calcul dynamique de fraîcheur côté navigateur) -->
-    <footer class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono text-[var(--muted-foreground)]">
+    <footer class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono text-[var(--muted-foreground)]">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <span id="footer-status-dot" class="inline-block w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
         <span class="text-[var(--foreground)] font-semibold">INFRASTRUCTURE PC LYCÉE</span>
@@ -1447,7 +1479,7 @@
         <span id="footer-tel-badge" class="px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/20">TÉLÉMÉTRIE OS STEALTH : N/A (IDLE)</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-24 13:03:23</strong></span>
+        <span>SYNC MIROIR : <strong id="footer-sync-ts" class="text-slate-300">2026-11-25 21:39:26</strong></span>
         <span id="footer-sync-age" class="px-2 py-0.5 rounded border bg-[var(--muted)] border-[var(--border)] text-slate-300 whitespace-nowrap">instantané</span>
       </div>
     </footer>
@@ -1477,7 +1509,7 @@
     let worldSub = 0.0;
     let franceSub = 0.0;
     let subDateStr = null;
-    let snapshotGeneratedIso = "2026-11-24T13:03:23";
+    let snapshotGeneratedIso = "2026-11-25T21:39:26";
     let lyceeSyncIso = "";
     let lyceeBotPid = "N/A";
     let lyceePageState = "IDLE";
@@ -2062,9 +2094,13 @@
       const searchInp = document.getElementById('history-search');
       if (searchInp && searchInp.value !== state.search) searchInp.value = state.search;
       const clearBtn = document.getElementById('btn-clear-search');
+      const kbdHint = document.getElementById('search-kbd-hint');
+      const hasSearchTxt = state.search.trim().length > 0;
       if (clearBtn) {
-        if (state.search.trim().length > 0) clearBtn.classList.remove('hidden');
-        else clearBtn.classList.add('hidden');
+        clearBtn.classList.toggle('hidden', !hasSearchTxt);
+      }
+      if (kbdHint) {
+        kbdHint.classList.toggle('hidden', hasSearchTxt);
       }
 
       ['SINGLE', 'COMPARE'].forEach(ov => {
@@ -4240,6 +4276,10 @@
       document.getElementById('pending-section-title').textContent = `Positions en Cours — ${pfLabel} (${list.length})`;
       document.getElementById('pending-total-stake').textContent = fmtEurJS(totalStake, false);
       document.getElementById('pending-total-pot').textContent = fmtEurJS(totalPot, false);
+      const kpiDotEl = document.getElementById('kpi-pending-dot');
+      if (kpiDotEl) kpiDotEl.classList.toggle('animate-pulse', list.length > 0);
+      const secDotEl = document.getElementById('pending-section-dot');
+      if (secDotEl) secDotEl.classList.toggle('animate-pulse', list.length > 0);
 
       const nowMs = Date.now();
       updateNextPendingEtaBanner(list, nowMs);
@@ -4729,9 +4769,9 @@
       if (modePill) {
         let modeTxt = isRemote ? 'Web / GitHub Pages' : 'Mode local · Relais PC';
         if (liveTransportStatus === 'supabase_live') {
-          modeTxt = _rtConnected ? 'Live Supabase ⚡' : 'Cloud Supabase';
+          modeTxt = _rtConnected ? 'Live Supabase' : 'Cloud Supabase';
         } else if (liveTransportStatus === 'local_sse') {
-          modeTxt = 'Live Local SSE ⚡';
+          modeTxt = 'Live Local SSE';
         } else if (liveTransportStatus === 'local_refresh') {
           modeTxt = 'Live Local · Relais PC';
         }
